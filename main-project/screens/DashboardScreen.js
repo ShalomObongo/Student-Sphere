@@ -1,7 +1,5 @@
-import { useNavigation } from '@react-navigation/native';
 import React from 'react';
-
-import { View, Text, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, Touchable, TouchableOpacity } from 'react-native';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
@@ -13,6 +11,7 @@ const DashboardScreen = () => {
     signOut(auth)
       .then(() => {
         Alert.alert('Logout Successful', 'You have been logged out.');
+        console.log('Successful logout')
         navigation.reset({
           index: 0,
           routes: [{ name: 'Home' }],
@@ -28,9 +27,12 @@ const DashboardScreen = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Dashboard</Text>
 
-      <Text>Welcome to the dashboard!</Text>
-      <Text>Email: {auth.currentUser?.email}</Text>
-      <Button title="Logout" onPress={handleSignout} />
+      <Text style={styles.welcomeTxt}>Welcome to the dashboard!</Text>
+      <Text style={styles.welcomeTxt}>Email: {auth.currentUser?.email}</Text>
+      {/* <TouchableOpacity title="Logout" > */}
+        <TouchableOpacity style={styles.logout} onPress={handleSignout}>
+          <Text style={styles.logoutTxt}>Logout</Text>
+        </TouchableOpacity>
 
     </View>
   );
