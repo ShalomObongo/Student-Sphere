@@ -5,25 +5,6 @@ import { signOut } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 
-// const DashboardScreen = () => {
-//   const navigation = useNavigation();
-
-//   const handleSignout = () => {
-//     signOut(auth)
-//       .then(() => {
-//         Alert.alert('Logout Successful', 'You have been logged out.');
-//         console.log('Successful logout')
-//         navigation.reset({
-//           index: 0,
-//           routes: [{ name: 'Login' }],
-//         });
-//       })
-//       .catch((error) => {
-//         Alert.alert('Logout Failed', error.message);
-//       });
-//   };
-
-
 const db = getFirestore();
 
 const DashboardScreen = () => {
