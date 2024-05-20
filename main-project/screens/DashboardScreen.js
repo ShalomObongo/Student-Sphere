@@ -31,12 +31,6 @@ const DashboardScreen = () => {
       <Text>Welcome to the dashboard!</Text>
       <Text>Email: {auth.currentUser?.email}</Text>
       <Button title="Logout" onPress={handleSignout} />
-=======
-      {/* Below will display the user's name in the current sesstion */}
-      <Text style={styles.welcomeTxt}>Welcome user</Text>
-      <TouchableOpacity onPress={logOut} style={styles.logout}>
-        <Text style={styles.logoutTxt}>Logout</Text>
-      </TouchableOpacity>
 
     </View>
   );
