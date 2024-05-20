@@ -4,6 +4,7 @@ import { auth,db } from '../firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import { doc, setDoc } from 'firebase/firestore';
+import { Picker } from '@react-native-picker/picker';
 
 
 const RegistrationScreen = () => {
@@ -11,6 +12,7 @@ const RegistrationScreen = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [firstName, setFirstName] = useState('');
+  const [role, setRole] = useState('student');
   const navigation = useNavigation();
 
   const handleRegistration = async () => {
@@ -29,6 +31,7 @@ const RegistrationScreen = () => {
         email: user.email,
         firstName: firstName,
         password: password, 
+        role:role
       });
 
       navigation.navigate('Dashboard');
@@ -78,9 +81,21 @@ const RegistrationScreen = () => {
             style={styles.input}
             placeholder="Confirm password"
             secureTextEntry
-            value={password}
+            value={confirmPassword}
             onChangeText={setConfirmPassword}
           />
+        </View>
+        <View style={styles.inputBox}>
+          <Text style={styles.text}>Role:</Text>
+          <Picker
+            selectedValue={role}
+            style={styles.picker}
+            onValueChange={(itemValue) => setRole(itemValue)}
+          >
+            <Picker.Item label="Student" value="student" />
+            <Picker.Item label="Admin" value="admin" />
+            <Picker.Item label="Teacher" value="teacher" />
+          </Picker>
         </View>
 
         <TouchableOpacity style={styles.registerBtn} onPress={handleRegistration} >
@@ -119,6 +134,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
     width: '80%',
+  },
+  picker: {
+    height: 40,
+    flex: 1,
   },
   registerBtn:{
     width: 200,
