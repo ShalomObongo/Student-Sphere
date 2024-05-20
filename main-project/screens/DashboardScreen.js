@@ -43,7 +43,9 @@ const DashboardScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Dashboard</Text>
+
       <Text style={styles.welcomeTxt}>Welcome to the dashboard,{firstName}</Text>
+
         <TouchableOpacity style={styles.logout} onPress={handleSignout}>
           <Text style={styles.logoutTxt}>Logout</Text>
         </TouchableOpacity>
