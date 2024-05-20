@@ -12,6 +12,7 @@ const RegistrationScreen = () => {
       .then((userCredentials) => {
         const user = userCredentials.user;
         console.log('Registered with:', user.email);
+        navigation.navigate('Dashboard');
       })
       .catch((error) => Alert.alert(error.message));
   };

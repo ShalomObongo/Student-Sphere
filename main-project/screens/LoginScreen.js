@@ -15,7 +15,10 @@ const LoginScreen = () => {
         const user = userCredentials.user;
         console.log('Logged in with:', user.email);
         Alert.alert('Login Successful', `Welcome, ${user.email}`);
-        navigation.navigate('Dashboard');
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Dashboard' }],
+        });
       })
       .catch((error) => Alert.alert('Login Failed', error.message));
   };
