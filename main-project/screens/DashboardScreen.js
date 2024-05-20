@@ -22,14 +22,17 @@ const DashboardScreen = () => {
       });
   };
 
+
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>Dashboard</Text>
       <Text style={styles.welcomeTxt}>Welcome to the dashboard!</Text>
       <Text style={styles.welcomeTxt}>Email: {auth.currentUser?.email}</Text>
       {/* <TouchableOpacity title="Logout" > */}
         <TouchableOpacity style={styles.logout} onPress={handleSignout}>
           <Text style={styles.logoutTxt}>Logout</Text>
         </TouchableOpacity>
+
     </View>
   );
 };
@@ -65,7 +68,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
     color:'lightblue'
   }
-
 });
 
 export default DashboardScreen;

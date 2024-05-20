@@ -26,6 +26,7 @@ const LoginScreen = () => {
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
       <View style={styles.container}>
+        <Text style={styles.title}>Login</Text>
         <View style={styles.inputBox}>
           <Text style={styles.text}>Email:</Text>
           <TextInput
@@ -62,11 +63,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
   },
+
   title: {
     fontSize: 40,
     fontWeight: 'bold',
     marginBottom: 20,
   },
+
   input: {
     flex: 1,
     width: '100px',
@@ -77,14 +80,15 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 10,
     padding: 20,
-
   },
   inputBox: {
+
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
     width: '80%',
   },
+
   loginBtn: {
     width: 200,
     padding: 10,
