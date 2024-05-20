@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   loginBtn:{
     width: 200,
     padding: 10,
-    backgroundColor: 'blue',
+    backgroundColor: 'lightgrey',
     borderRadius: 15,
     alignItems: 'center',
     marginTop: 10
