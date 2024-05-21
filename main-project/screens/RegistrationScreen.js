@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { auth,db } from '../firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification} from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import { doc, setDoc } from 'firebase/firestore';
 import { Picker } from '@react-native-picker/picker';
@@ -13,6 +13,7 @@ const RegistrationScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [role, setRole] = useState('student');
+  const [status,setStatus]=useState('');
   const navigation = useNavigation();
 
   const handleRegistration = async () => {
@@ -20,26 +21,44 @@ const RegistrationScreen = () => {
       Alert.alert('Passwords do not match');
       return;
     }
-
+  
     try {
       const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredentials.user;
       console.log('Registered with:', user.email);
-
 
       // This saves user details to Firestore
       await setDoc(doc(db, 'users', user.uid), {
         email: user.email,
         firstName: firstName,
         password: password, 
-        role:role
+        role: role,
+        active: true, 
       });
-
+  
+      // Send email verification
+      await sendVerificationEmail(user);
+  
+      Alert.alert('Registration Successful', 'A verification email has been sent to your email address.');
+  
       navigation.navigate('Dashboard');
     } catch (error) {
       Alert.alert('Registration Failed', error.message);
     }
 
+  };
+  
+  // Function to send email verification
+  const sendVerificationEmail = async (user) => {
+    try {
+      await sendEmailVerification(user, {
+        url: 'https://studentsphere-1fb98.firebaseapp.com', 
+        handleCodeInApp: true,
+      });
+    } catch (error) {
+      console.error('Error sending verification email:', error.message);
+      throw error;
+    }
   };
 
   return (

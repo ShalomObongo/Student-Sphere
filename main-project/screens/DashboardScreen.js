@@ -1,4 +1,4 @@
-import React,{useEffect, useState} from 'react';
+import React,{useEffect, useState,useCallback} from 'react';
 import { View, Text, Button, StyleSheet, Alert, Touchable, TouchableOpacity } from 'react-native';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
@@ -9,6 +9,8 @@ const db = getFirestore();
 
 const DashboardScreen = () => {
   const [firstName, setFirstName] = useState('');
+  const [inactiveTime, setInactiveTime] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -22,6 +24,22 @@ const DashboardScreen = () => {
     };
 
     fetchUserName();
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setInactiveTime(inactiveTime + 1);
+      if (inactiveTime >= 60) { 
+        setIsLocked(true);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [inactiveTime]);
+
+  const resetTimer = useCallback(() => {
+    setInactiveTime(0);
+    setIsLocked(false);
   }, []);
 
   const handleSignout = () => {
@@ -42,6 +60,12 @@ const DashboardScreen = () => {
 
   return (
     <View style={styles.container}>
+      {isLocked ? (
+        <TouchableOpacity style={styles.lockScreen} onPress={resetTimer}>
+          <Text style={styles.lockScreenText}>Locked! Tap to unlock</Text>
+        </TouchableOpacity>
+      ) : (
+        <>
       <Text style={styles.title}>Dashboard</Text>
 
       <Text style={styles.welcomeTxt}>Welcome to the dashboard,{firstName}</Text>
@@ -49,7 +73,8 @@ const DashboardScreen = () => {
         <TouchableOpacity style={styles.logout} onPress={handleSignout}>
           <Text style={styles.logoutTxt}>Logout</Text>
         </TouchableOpacity>
-
+        </>
+      )}
     </View>
   );
 };
@@ -84,7 +109,22 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginRight: 10,
     color:'lightblue'
-  }
+  },
+  lockScreen: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  lockScreenText: {
+    fontSize: 25,
+    color: 'white',
+  },
 });
 
 export default DashboardScreen;
