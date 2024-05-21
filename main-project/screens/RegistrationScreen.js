@@ -51,6 +51,7 @@ const RegistrationScreen = () => {
       });
     } catch (error) {
       Alert.alert('Registration Failed', error.message);
+      console.log('Registered with ', user.email, ' failed');
     }
   };
 
