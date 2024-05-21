@@ -68,8 +68,8 @@ const DashboardScreen = () => {
         <>
       <Text style={styles.title}>Dashboard</Text>
 
-      <Text style={styles.welcomeTxt}>Welcome to the dashboard,{firstName}</Text>
-
+      <Text style={styles.welcomeTxt}>Welcome to the dashboard, {firstName}</Text>
+      <Text>Email: {auth.currentUser?.email}</Text>
         <TouchableOpacity style={styles.logout} onPress={handleSignout}>
           <Text style={styles.logoutTxt}>Logout</Text>
         </TouchableOpacity>
