@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from 'react-native';
-import { auth,db } from '../firebase';
+import { KeyboardAvoidingView, View, Text, TextInput, Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import { auth, db } from '../firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import { doc, setDoc } from 'firebase/firestore';
 import { Picker } from '@react-native-picker/picker';
-
 
 const RegistrationScreen = () => {
   const [email, setEmail] = useState('');
@@ -15,7 +14,20 @@ const RegistrationScreen = () => {
   const [role, setRole] = useState('student');
   const navigation = useNavigation();
 
+  const validatePassword = (password) => {
+    const minLength = /.{8,}/;
+    const lowerCase = /[a-z]/;
+    const upperCase = /[A-Z]/;
+    const number = /[0-9]/;
+    return minLength.test(password) && lowerCase.test(password) && upperCase.test(password) && number.test(password);
+  };
+
   const handleRegistration = async () => {
+    if (!validatePassword(password)) {
+      Alert.alert('Password Requirements', 'Password must be more than 8 characters long, contain a lowercase letter, an uppercase letter, and a number.');
+      return;
+    }
+
     if (password !== confirmPassword) {
       Alert.alert('Passwords do not match');
       return;
@@ -26,20 +38,17 @@ const RegistrationScreen = () => {
       const user = userCredentials.user;
       console.log('Registered with:', user.email);
 
-
-      // This saves user details to Firestore
+      // Save user details to Firestore
       await setDoc(doc(db, 'users', user.uid), {
         email: user.email,
         firstName: firstName,
-        password: password, 
-        role:role
+        role: role,
       });
 
-      navigation.navigate('Dashboard');
+      navigation.replace('Dashboard');
     } catch (error) {
       Alert.alert('Registration Failed', error.message);
     }
-
   };
 
   return (
@@ -47,19 +56,17 @@ const RegistrationScreen = () => {
       <View style={styles.container}>
         <Text style={styles.title}>Registration</Text>
 
-
-            <View style={styles.inputBox}>
-              <Text style={styles.text}>First Name:</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your first name"
-                value={firstName}
-                onChangeText={setFirstName}
-              />
-            </View>
-         <View style={styles.inputBox}>
-           <Text style={styles.text}>Email:</Text>
-
+        <View style={styles.inputBox}>
+          <Text style={styles.text}>First Name:</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your first name"
+            value={firstName}
+            onChangeText={setFirstName}
+          />
+        </View>
+        <View style={styles.inputBox}>
+          <Text style={styles.text}>Email:</Text>
           <TextInput
             style={styles.input}
             placeholder="Enter a valid email"
@@ -102,7 +109,7 @@ const RegistrationScreen = () => {
           </Picker>
         </View>
 
-        <TouchableOpacity style={styles.registerBtn} onPress={handleRegistration} >
+        <TouchableOpacity style={styles.registerBtn} onPress={handleRegistration}>
           <Text style={styles.registerbtnTxt}>Register</Text>
         </TouchableOpacity>
       </View>
@@ -131,7 +138,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 10,
     padding: 10,
-    fonsize: 15
+    fontSize: 15,
   },
   inputBox: {
     flexDirection: 'row',
@@ -139,19 +146,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     width: '80%',
   },
-
   picker: {
     height: 40,
     flex: 1,
   },
-  registerBtn:{
-
+  registerBtn: {
     width: 200,
     padding: 10,
     backgroundColor: 'lightgrey',
     borderRadius: 15,
     alignItems: 'center',
-    marginTop: 10
+    marginTop: 10,
   },
   registerbtnTxt: {
     color: 'black',
@@ -161,7 +166,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 15,
     marginRight: 10,
-  }
+  },
 });
 
 export default RegistrationScreen;
