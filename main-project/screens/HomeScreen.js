@@ -21,7 +21,7 @@ const Homescreen = () => {
       <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
         <Text style={styles.homeTxt}>Login</Text>
       </TouchableOpacity>
-      <TouchableOpacity  style={styles.registerBtn} onPress={handleRegister}>
+      <TouchableOpacity style={styles.registerBtn} onPress={handleRegister}>
         <Text style={styles.homeTxt}>Register</Text>
       </TouchableOpacity>
     </View>
@@ -40,6 +40,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
+
   loginBtn:{
     width: 200,
     padding: 10,
@@ -48,6 +49,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10
   },
+
   registerBtn:{
     width: 200,
     padding: 10,

@@ -26,7 +26,7 @@ const RegistrationScreen = () => {
       const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredentials.user;
       console.log('Registered with:', user.email);
-  
+
       // This saves user details to Firestore
       await setDoc(doc(db, 'users', user.uid), {
         email: user.email,
@@ -45,6 +45,7 @@ const RegistrationScreen = () => {
     } catch (error) {
       Alert.alert('Registration Failed', error.message);
     }
+
   };
   
   // Function to send email verification
@@ -65,6 +66,7 @@ const RegistrationScreen = () => {
       <View style={styles.container}>
         <Text style={styles.title}>Registration</Text>
 
+
             <View style={styles.inputBox}>
               <Text style={styles.text}>First Name:</Text>
               <TextInput
@@ -76,6 +78,7 @@ const RegistrationScreen = () => {
             </View>
          <View style={styles.inputBox}>
            <Text style={styles.text}>Email:</Text>
+
           <TextInput
             style={styles.input}
             placeholder="Enter a valid email"
@@ -139,7 +142,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   input: {
-    flex:1,
+    flex: 1,
     width: '80%',
     height: 40,
     borderWidth: 1,
@@ -147,19 +150,21 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 10,
     padding: 10,
-    fontSize:15
+    fonsize: 15
   },
-  inputBox:{
+  inputBox: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
     width: '80%',
   },
+
   picker: {
     height: 40,
     flex: 1,
   },
   registerBtn:{
+
     width: 200,
     padding: 10,
     backgroundColor: 'lightgrey',
@@ -167,11 +172,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10
   },
-  registerbtnTxt:{
+  registerbtnTxt: {
     color: 'black',
     fontSize: 20,
   },
-  text:{
+  text: {
     fontWeight: 'bold',
     fontSize: 15,
     marginRight: 10,

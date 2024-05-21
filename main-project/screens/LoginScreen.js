@@ -20,14 +20,13 @@ const LoginScreen = () => {
           routes: [{ name: 'Dashboard' }],
         });
       })
-      .catch((error) => Alert.alert('Login Failed.Email and password does not exist', error.message));
+      .catch((error) => Alert.alert('Login Failed. Email or password is incorrect', error.message));
   };
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
       <View style={styles.container}>
         <Text style={styles.title}>Login</Text>
-
         <View style={styles.inputBox}>
           <Text style={styles.text}>Email:</Text>
           <TextInput
@@ -72,24 +71,25 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    flex:1,
+    flex: 1,
     width: '100px',
     height: 60,
-    fontSize:18,
+    fontSize: 18,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
     marginBottom: 10,
     padding: 20,
-    
   },
-  inputBox:{
+  inputBox: {
+
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
     width: '80%',
   },
-  loginBtn:{
+
+  loginBtn: {
     width: 200,
     padding: 10,
     backgroundColor: 'lightgrey',
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 20,
   },
-  text:{
+  text: {
     fontWeight: 'bold',
     fontSize: 20,
     marginRight: 10,
