@@ -45,7 +45,10 @@ const RegistrationScreen = () => {
         role: role,
       });
 
-      navigation.replace('Dashboard');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Dashboard' }],
+      });
     } catch (error) {
       Alert.alert('Registration Failed', error.message);
     }
