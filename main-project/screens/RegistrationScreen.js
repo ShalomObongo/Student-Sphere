@@ -6,6 +6,7 @@ import { createUserWithEmailAndPassword, sendEmailVerification} from 'firebase/a
 import { useNavigation } from '@react-navigation/native';
 import { doc, setDoc } from 'firebase/firestore';
 import { Picker } from '@react-native-picker/picker';
+import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 
 const RegistrationScreen = () => {
   const [email, setEmail] = useState('');
@@ -15,6 +16,9 @@ const RegistrationScreen = () => {
   const [role, setRole] = useState('student');
   const [status,setStatus]=useState('');
   const navigation = useNavigation();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmation, setShowConfirm] = useState(false);
+
 
   const validatePassword = (password) => {
     const minLength = /.{8,}/;
@@ -80,13 +84,22 @@ const RegistrationScreen = () => {
     }
   };
 
+  const toggleShowPassword = () => { 
+    setShowPassword(!showPassword); 
+  };
+  const toggleConfirm = () => { 
+    setShowConfirm(!showConfirmation); 
+  };
+
+
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
       <View style={styles.container}>
-        <Text style={styles.title}>Registration</Text>
-
+        <Text style={styles.title}>Create account</Text>
+        <Text style={styles.secondtitle}>Welcome!Please enter your details.</Text>
         <View style={styles.inputBox}>
-          <Text style={styles.text}>First Name:</Text>
+          {/* <Text style={styles.text}>First Name:</Text> */}
           <TextInput
             style={styles.input}
             placeholder="Enter your first name"
@@ -95,7 +108,7 @@ const RegistrationScreen = () => {
           />
         </View>
         <View style={styles.inputBox}>
-          <Text style={styles.text}>Email:</Text>
+          {/* <Text style={styles.text}>Email:</Text> */}
           <TextInput
             style={styles.input}
             placeholder="Enter a valid email"
@@ -106,26 +119,47 @@ const RegistrationScreen = () => {
           />
         </View>
         <View style={styles.inputBox}>
-          <Text style={styles.text}>Password:</Text>
+          {/* <Text style={styles.text}>Password:</Text> */}
           <TextInput
             style={styles.input}
             placeholder="Enter a password"
-            secureTextEntry
+            secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
           />
+          <MaterialCommunityIcons 
+            name={showPassword ? 'eye-off' : 'eye'} 
+            size={24} 
+            color="#aaa"
+            style={styles.icon} 
+            onPress={toggleShowPassword} 
+          /> 
         </View>
         <View style={styles.inputBox}>
-          <Text style={styles.text}>Confirm Password:</Text>
+          {/* <Text style={styles.text}>Confirm Password:</Text> */}
           <TextInput
             style={styles.input}
             placeholder="Confirm password"
-            secureTextEntry
+            secureTextEntry={!showConfirmation}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
           />
+          <MaterialCommunityIcons 
+            name={showConfirmation ? 'eye-off' : 'eye'} 
+            size={24} 
+            color="#aaa"
+            style={styles.icon} 
+            onPress={toggleConfirm} 
+          /> 
         </View>
-        <View style={styles.inputBox}>
+        <View 
+          style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginBottom: 10,
+          width: '80%',
+          }}
+        >
           <Text style={styles.text}>Role:</Text>
           <Picker
             selectedValue={role}
@@ -158,6 +192,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
+  secondtitle:{
+    fontSize: 18,
+    // fontWeight: 'bold',
+    marginBottom: 20,
+    // color:'grey'
+    // alignItems:'flex-start'
+  },
   input: {
     flex: 1,
     width: '80%',
@@ -168,27 +209,35 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     padding: 10,
     fontSize: 15,
+    backgroundColor:'lightgray',
+    color:'black',
+    borderWidth: 0,
   },
   inputBox: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
     width: '80%',
+    backgroundColor:'lightgray',
+    borderRadius:5,
+    marginBottom:20
   },
   picker: {
     height: 40,
     flex: 1,
+    borderRadius:20,
+    borderColor:'lightgray'
   },
   registerBtn: {
-    width: 200,
+    width: 300,
     padding: 10,
-    backgroundColor: 'lightgrey',
+    backgroundColor: 'black',
     borderRadius: 15,
     alignItems: 'center',
     marginTop: 10,
   },
   registerbtnTxt: {
-    color: 'black',
+    color: 'white',
     fontSize: 20,
   },
   text: {
@@ -196,6 +245,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginRight: 10,
   },
+  icon:{
+    marginRight:20
+  }
 });
 
 export default RegistrationScreen;
