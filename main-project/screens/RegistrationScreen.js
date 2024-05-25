@@ -48,6 +48,11 @@ const RegistrationScreen = () => {
         role: role,
         active: true, 
       });
+
+      await setDoc(doc(db,'User roles',user.uid),{
+        firstName:firstName,
+        role:role
+      })
   
       // Send email verification
       await sendVerificationEmail(user);
