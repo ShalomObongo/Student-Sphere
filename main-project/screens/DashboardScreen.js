@@ -95,14 +95,14 @@ const styles = StyleSheet.create({
     fontSize: 20
   },
   logout:{
-    width: 200,
+    width: 300,
     padding: 10,
     backgroundColor: 'grey',
     borderRadius: 15,
     alignItems: 'center',
     marginTop: 10,
     position:'absolute',
-    bottom:10,
+    bottom:30,
   },
   logoutTxt:{
     fontWeight: 'bold',
