@@ -57,6 +57,7 @@ const DashboardScreen = () => {
         </TouchableOpacity>  
       
       <TouchableOpacity style={styles.logout} onPress={handleSignout}>
+
           <Text style={styles.logoutTxt}>Logout</Text>
       </TouchableOpacity>
       
