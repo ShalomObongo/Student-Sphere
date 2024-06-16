@@ -53,7 +53,7 @@ const DashboardScreen = () => {
       <Text>Email: {auth.currentUser?.email}</Text>
 
       <TouchableOpacity style={styles.profile} onPress={GoToProfile}>
-          <Text style={styles.logoutTxt}>Go to profile</Text>
+          <Text style={styles.profileTxt}>Go to profile</Text>
         </TouchableOpacity>  
       
       <TouchableOpacity style={styles.logout} onPress={handleSignout}>
@@ -70,6 +70,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
+  },
+  profile:{
+    width: 300,
+    padding: 10,
+    backgroundColor: 'grey',
+    borderRadius: 15,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  profileTxt:{
+    fontWeight: 'bold',
+    fontSize: 15,
+    marginRight: 10,
+    color:'lightblue'
   },
   title: {
     fontSize: 30,

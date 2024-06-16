@@ -9,6 +9,7 @@ import RegistrationScreen from './screens/RegistrationScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import EditProfile from './screens/EditProfile';
 import ProfileScreen from './screens/ProfileScreen';
+import ResetPwd from './screens/resetPwd';
 
 const Stack = createNativeStackNavigator();
 
@@ -42,9 +43,14 @@ export default function App() {
           options={{ title: 'Profile screen' }}
         />
         <Stack.Screen
-          name="Edit Profile "
+          name="Edit Profile"
           component={EditProfile}
           options={{ title: 'Edit profile' }}
+        />
+        <Stack.Screen
+          name="Reset password"
+          component={ResetPwd}
+          options={{ title: 'Reset password' }}
         />
       </Stack.Navigator>
       <StatusBar style="auto" />
