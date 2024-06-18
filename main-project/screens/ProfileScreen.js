@@ -13,7 +13,8 @@ const ProfileScreen = () => {
     const navigation = useNavigation();
     const [firstName, setFirstName] = useState('');
     const [role,setRole]=useState('');
-    const [email,setEmail]=useState('')
+    const [email,setEmail]=useState('');
+    const [phoneNumber,setNumber]=useState('');
 
     useEffect(() => {
         const fetchUserDetails = async () => {
@@ -22,6 +23,7 @@ const ProfileScreen = () => {
                 setFirstName(userDoc.data().firstName);
                 setEmail(userDoc.data().email);
                 setRole(userDoc.data().role);
+                setNumber(userDoc.data().phoneNumber)
             } else {
                 console.log("No such document!");
             }
@@ -61,9 +63,10 @@ const ProfileScreen = () => {
             <ScrollView style={styles.container}>
                 <View style={styles.profile}>
                     <Text>Hello, {firstName}</Text>
-                    {/* <Text style={styles.profileRole}></Text> */}
-                    <Text style={styles.profileRole}>Email: {email}</Text>
-                    <Text style={styles.profileRole}>Role: {role}</Text>
+                    {/* <Text style={styles.profileSecond}></Text> */}
+                    <Text style={styles.profileSecond}>Email: {email}</Text>
+                    <Text style={styles.profileSecond}>Role: {role}</Text>
+                    <Text style={styles.profileSecond}>Number: {phoneNumber}</Text>
                     
                 </View>
                 <View style={styles.profileNaviagtion}>
@@ -92,7 +95,7 @@ const styles = StyleSheet.create({
         color: '#414d63',
         textAlign: 'center'
     },
-    profileRole: {
+    profileSecond: {
         marginTop: 5,
         fontSize: 16,
         color: '#989898',
