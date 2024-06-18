@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, View, Text, TextInput, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { KeyboardAvoidingView, View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, Button } from 'react-native';
 import { auth, db } from '../firebase';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import { doc, setDoc } from 'firebase/firestore';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import CountryPicker from 'react-native-country-picker-modal';
+import PhoneInput from 'react-native-phone-input';
 
 const RegistrationScreen = () => {
   const [email, setEmail] = useState('');
@@ -23,6 +25,24 @@ const RegistrationScreen = () => {
     { label: 'Admin', value: 'admin' },
     { label: 'Teacher', value: 'teacher' },
   ]);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [countryCode, setCountryCode] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState(null);
+  const [countryPickerVisible, setCountryPickerVisible] = useState(false);
+  const validatePhoneNumber = (number) => {
+  const phoneNumberPattern = /^\+[1-9]{1}[0-9]{3,14}$/;
+  return phoneNumberPattern.test(number);
+};
+
+  const onSelectCountry = (country) => {
+    setCountryCode(country.cca2);
+    setSelectedCountry(country);
+    setCountryPickerVisible(false);
+  };
+
+  const toggleCountryPicker = () => {
+    setCountryPickerVisible(!countryPickerVisible);
+  };
 
   const validatePassword = (password) => {
     const minLength = /.{8,}/;
@@ -58,6 +78,11 @@ const RegistrationScreen = () => {
       return;
     }
 
+    if (!validatePhoneNumber(phoneNumber)) {
+      Alert.alert('Validation Error', 'Please enter a valid phone number.');
+      return;
+    }
+
     if (!role) {
       Alert.alert('Validation Error', 'Please select a role.');
       return;
@@ -68,12 +93,11 @@ const RegistrationScreen = () => {
       const user = userCredentials.user;
       console.log('Registered with:', user.email);
 
-      // This saves user details to Firestore
       await setDoc(doc(db, 'users', user.uid), {
         email: user.email,
         firstName: firstName,
-        password: password,
         role: role,
+        phoneNumber: `${countryCode} ${phoneNumber}`,
         active: true,
       });
 
@@ -82,20 +106,17 @@ const RegistrationScreen = () => {
         role: role,
       });
 
-      // Send email verification
       await sendVerificationEmail(user);
 
       Alert.alert('Registration Successful', 'A verification email has been sent to your email address.');
 
       navigation.navigate('Dashboard');
-
     } catch (error) {
       Alert.alert('Registration Failed', error.message);
       console.log('Registration failed:', error.message);
     }
   };
 
-  // Function to send email verification
   const sendVerificationEmail = async (user) => {
     try {
       await sendEmailVerification(user, {
@@ -172,6 +193,16 @@ const RegistrationScreen = () => {
           />
         </View>
         <View style={styles.inputBox}>
+        <Text style={styles.text}>Phone:</Text>
+          <PhoneInput
+            placeholder="Input phone number"
+            value={phoneNumber}
+            onChangePhoneNumber={(number) => setPhoneNumber(number)}
+            onPressFlag={toggleCountryPicker}
+            style={styles.phoneInput}
+          />
+        </View>
+        <View style={styles.inputBox}>
           <DropDownPicker
             open={open}
             value={role}
@@ -210,12 +241,10 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    width: '80%',
     height: 40,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
-    marginBottom: 10,
     padding: 10,
     fontSize: 15,
     backgroundColor: 'lightgray',
@@ -230,6 +259,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'lightgray',
     borderRadius: 5,
     marginBottom: 20,
+    zIndex: 1,
   },
   picker: {
     width: '100%',
@@ -245,19 +275,26 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     alignItems: 'center',
     marginTop: 10,
+    zIndex: 0,
   },
   registerbtnTxt: {
     color: 'white',
     fontSize: 20,
   },
   text: {
-    fontWeight: 'bold',
-    fontSize: 15,
-    marginRight: 10,
+    marginLeft: 10,
+    color: 'darkgray',
   },
   icon: {
     marginRight: 20,
   },
+  phoneInput: { 
+    height: 40, 
+    width: '83%', 
+    borderWidth: 1, 
+    borderColor: '#ccc', 
+    paddingHorizontal: 5, 
+},
 });
 
 export default RegistrationScreen;

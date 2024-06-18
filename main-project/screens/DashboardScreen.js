@@ -27,6 +27,7 @@ const DashboardScreen = () => {
   const GoToProfile=()=>{
     navigation.navigate('Profile screen')
   }
+  
 
   const handleSignout = () => {
     signOut(auth)

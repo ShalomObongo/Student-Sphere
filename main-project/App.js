@@ -10,6 +10,8 @@ import DashboardScreen from './screens/DashboardScreen';
 import EditProfile from './screens/EditProfile';
 import ProfileScreen from './screens/ProfileScreen';
 import ResetPwd from './screens/resetPwd';
+import TaskScreen from './screens/taskscreen';
+import UnitScreen from './screens/unitscreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -51,6 +53,16 @@ export default function App() {
           name="Reset password"
           component={ResetPwd}
           options={{ title: 'Reset password' }}
+        />
+        <Stack.Screen
+          name="Task Screen"
+          component={TaskScreen}
+          options={{ title: 'Task Screen' }}
+        />
+        <Stack.Screen
+          name="Unit Screen"
+          component={UnitScreen}
+          options={{ title: 'Unit Screen' }}
         />
       </Stack.Navigator>
       <StatusBar style="auto" />

@@ -61,6 +61,14 @@ const styles = StyleSheet.create({
   },
   homeTxt:{
     fontSize:20
+  },
+  darkModeBtn: {
+    width: 300,
+    padding: 10,
+    backgroundColor: '#333',
+    borderRadius: 15,
+    alignItems: 'center',
+    marginTop: 20
   }
 });
 
