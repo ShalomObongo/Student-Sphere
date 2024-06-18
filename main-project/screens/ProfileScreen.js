@@ -12,18 +12,22 @@ const Sections = [];
 const ProfileScreen = () => {
     const navigation = useNavigation();
     const [firstName, setFirstName] = useState('');
+    const [role,setRole]=useState('');
+    const [email,setEmail]=useState('')
 
     useEffect(() => {
-        const fetchUserName = async () => {
+        const fetchUserDetails = async () => {
             const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
             if (userDoc.exists()) {
                 setFirstName(userDoc.data().firstName);
+                setEmail(userDoc.data().email);
+                setRole(userDoc.data().role);
             } else {
                 console.log("No such document!");
             }
         };
 
-        fetchUserName();
+        fetchUserDetails();
     }, []);
     const handleSignout = () => {
         signOut(auth)
@@ -58,7 +62,9 @@ const ProfileScreen = () => {
                 <View style={styles.profile}>
                     <Text>Hello, {firstName}</Text>
                     {/* <Text style={styles.profileRole}></Text> */}
-                    <Text style={styles.profileRole}>Role: Student</Text>
+                    <Text style={styles.profileRole}>Email: {email}</Text>
+                    <Text style={styles.profileRole}>Role: {role}</Text>
+                    
                 </View>
                 <View style={styles.profileNaviagtion}>
                     <TouchableOpacity style={styles.taskBtn} onPress={gotoTasks}><Text style={styles.taskTxt}>View tasks</Text></TouchableOpacity>
