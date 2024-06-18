@@ -12,18 +12,24 @@ const Sections = [];
 const ProfileScreen = () => {
     const navigation = useNavigation();
     const [firstName, setFirstName] = useState('');
+    const [role,setRole]=useState('');
+    const [email,setEmail]=useState('');
+    const [phoneNumber,setNumber]=useState('');
 
     useEffect(() => {
-        const fetchUserName = async () => {
+        const fetchUserDetails = async () => {
             const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
             if (userDoc.exists()) {
                 setFirstName(userDoc.data().firstName);
+                setEmail(userDoc.data().email);
+                setRole(userDoc.data().role);
+                setNumber(userDoc.data().phoneNumber)
             } else {
                 console.log("No such document!");
             }
         };
 
-        fetchUserName();
+        fetchUserDetails();
     }, []);
     const handleSignout = () => {
         signOut(auth)
@@ -57,8 +63,11 @@ const ProfileScreen = () => {
             <ScrollView style={styles.container}>
                 <View style={styles.profile}>
                     <Text>Hello, {firstName}</Text>
-                    {/* <Text style={styles.profileRole}></Text> */}
-                    <Text style={styles.profileRole}>Role: Student</Text>
+                    {/* <Text style={styles.profileSecond}></Text> */}
+                    <Text style={styles.profileSecond}>Email: {email}</Text>
+                    <Text style={styles.profileSecond}>Role: {role}</Text>
+                    <Text style={styles.profileSecond}>Number: {phoneNumber}</Text>
+                    
                 </View>
                 <View style={styles.profileNaviagtion}>
                     <TouchableOpacity style={styles.taskBtn} onPress={gotoTasks}><Text style={styles.taskTxt}>View tasks</Text></TouchableOpacity>
@@ -86,7 +95,7 @@ const styles = StyleSheet.create({
         color: '#414d63',
         textAlign: 'center'
     },
-    profileRole: {
+    profileSecond: {
         marginTop: 5,
         fontSize: 16,
         color: '#989898',
