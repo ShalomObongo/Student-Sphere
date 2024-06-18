@@ -137,6 +137,10 @@ const RegistrationScreen = () => {
     setShowConfirm(!showConfirmation);
   };
 
+  const gotoLogin=()=>{
+    navigation.navigate('Login')
+  }
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
       <View style={styles.container}>
@@ -215,6 +219,7 @@ const RegistrationScreen = () => {
             dropDownContainerStyle={styles.dropdownContainerStyle}
           />
         </View>
+        <Text>Already have an account? <Text style={{color:'blue'}} onPress={gotoLogin}>Login</Text></Text>
         <TouchableOpacity style={styles.registerBtn} onPress={handleRegistration}>
           <Text style={styles.registerbtnTxt}>Register</Text>
         </TouchableOpacity>

@@ -41,6 +41,10 @@ const LoginScreen = () => {
     setShowPassword(!showPassword); 
   };
 
+  const gotoRegister=()=>{
+    navigation.navigate('Registration')
+  }
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
       <View style={styles.container}>
@@ -74,6 +78,9 @@ const LoginScreen = () => {
             onPress={toggleShowPassword} 
           /> 
         </View>
+        <Text>Don't have an account?
+          <Text style={{color:'blue'}} onPress={gotoRegister}>Sign up</Text>
+          </Text>
         <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
           <Text style={styles.loginbtnText}>Login</Text>
         </TouchableOpacity>
