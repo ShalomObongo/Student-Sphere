@@ -21,7 +21,7 @@ const Homescreen = () => {
       <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
         <Text style={styles.homeTxt}>Login</Text>
       </TouchableOpacity>
-      <TouchableOpacity  style={styles.registerBtn} onPress={handleRegister}>
+      <TouchableOpacity style={styles.registerBtn} onPress={handleRegister}>
         <Text style={styles.homeTxt}>Register</Text>
       </TouchableOpacity>
     </View>
@@ -40,16 +40,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
+
   loginBtn:{
-    width: 200,
+    width: 300,
     padding: 10,
     backgroundColor: 'lightgrey',
     borderRadius: 15,
     alignItems: 'center',
-    marginTop: 10
+    marginTop: 20,
+    marginBottom:20
   },
+
   registerBtn:{
-    width: 200,
+    width: 300,
     padding: 10,
     backgroundColor: '#7fffd4',
     borderRadius: 15,
@@ -58,6 +61,14 @@ const styles = StyleSheet.create({
   },
   homeTxt:{
     fontSize:20
+  },
+  darkModeBtn: {
+    width: 300,
+    padding: 10,
+    backgroundColor: '#333',
+    borderRadius: 15,
+    alignItems: 'center',
+    marginTop: 20
   }
 });
 
