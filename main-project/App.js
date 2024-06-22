@@ -7,6 +7,11 @@ import HomeScreen from './screens/HomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import RegistrationScreen from './screens/RegistrationScreen';
 import DashboardScreen from './screens/DashboardScreen';
+import EditProfile from './screens/EditProfile';
+import ProfileScreen from './screens/ProfileScreen';
+import ResetPwd from './screens/resetPwd';
+import TaskScreen from './screens/taskscreen';
+import UnitScreen from './screens/unitscreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -33,6 +38,31 @@ export default function App() {
           name="Dashboard"
           component={DashboardScreen}
           options={{ title: 'Dashboard' }}
+        />
+        <Stack.Screen
+          name="Profile screen"
+          component={ProfileScreen}
+          options={{ title: 'Profile screen' }}
+        />
+        <Stack.Screen
+          name="Edit Profile"
+          component={EditProfile}
+          options={{ title: 'Edit profile' }}
+        />
+        <Stack.Screen
+          name="Reset password"
+          component={ResetPwd}
+          options={{ title: 'Reset password' }}
+        />
+        <Stack.Screen
+          name="Task Screen"
+          component={TaskScreen}
+          options={{ title: 'Task Screen' }}
+        />
+        <Stack.Screen
+          name="Unit Screen"
+          component={UnitScreen}
+          options={{ title: 'Unit Screen' }}
         />
       </Stack.Navigator>
       <StatusBar style="auto" />

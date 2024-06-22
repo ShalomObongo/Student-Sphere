@@ -9,8 +9,6 @@ const db = getFirestore();
 
 const DashboardScreen = () => {
   const [firstName, setFirstName] = useState('');
-  const [inactiveTime, setInactiveTime] = useState(0);
-  const [isLocked, setIsLocked] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -26,21 +24,10 @@ const DashboardScreen = () => {
     fetchUserName();
   }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setInactiveTime(inactiveTime + 1);
-      if (inactiveTime >= 60) { 
-        setIsLocked(true);
-      }
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [inactiveTime]);
-
-  const resetTimer = useCallback(() => {
-    setInactiveTime(0);
-    setIsLocked(false);
-  }, []);
+  const GoToProfile=()=>{
+    navigation.navigate('Profile screen')
+  }
+  
 
   const handleSignout = () => {
     signOut(auth)
@@ -60,21 +47,21 @@ const DashboardScreen = () => {
 
   return (
     <View style={styles.container}>
-      {isLocked ? (
-        <TouchableOpacity style={styles.lockScreen} onPress={resetTimer}>
-          <Text style={styles.lockScreenText}>Locked! Tap to unlock</Text>
-        </TouchableOpacity>
-      ) : (
-        <>
+     
       <Text style={styles.title}>Dashboard</Text>
 
-      <Text style={styles.welcomeTxt}>Welcome to the dashboard,{firstName}</Text>
+      <Text style={styles.welcomeTxt}>Welcome to the dashboard, {firstName}</Text>
+      <Text>Email: {auth.currentUser?.email}</Text>
 
-        <TouchableOpacity style={styles.logout} onPress={handleSignout}>
+      <TouchableOpacity style={styles.profile} onPress={GoToProfile}>
+          <Text style={styles.profileTxt}>Go to profile</Text>
+        </TouchableOpacity>  
+      
+      <TouchableOpacity style={styles.logout} onPress={handleSignout}>
+
           <Text style={styles.logoutTxt}>Logout</Text>
-        </TouchableOpacity>
-        </>
-      )}
+      </TouchableOpacity>
+      
     </View>
   );
 };
@@ -86,6 +73,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
   },
+  profile:{
+    width: 300,
+    padding: 10,
+    backgroundColor: 'grey',
+    borderRadius: 15,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  profileTxt:{
+    fontWeight: 'bold',
+    fontSize: 15,
+    marginRight: 10,
+    color:'lightblue'
+  },
   title: {
     fontSize: 30,
     fontWeight: 'bold',
@@ -95,14 +96,14 @@ const styles = StyleSheet.create({
     fontSize: 20
   },
   logout:{
-    width: 200,
+    width: 300,
     padding: 10,
     backgroundColor: 'grey',
     borderRadius: 15,
     alignItems: 'center',
     marginTop: 10,
     position:'absolute',
-    bottom:10,
+    bottom:30,
   },
   logoutTxt:{
     fontWeight: 'bold',

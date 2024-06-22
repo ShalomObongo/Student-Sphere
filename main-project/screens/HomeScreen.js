@@ -42,16 +42,17 @@ const styles = StyleSheet.create({
   },
 
   loginBtn:{
-    width: 200,
+    width: 300,
     padding: 10,
     backgroundColor: 'lightgrey',
     borderRadius: 15,
     alignItems: 'center',
-    marginTop: 10
+    marginTop: 20,
+    marginBottom:20
   },
 
   registerBtn:{
-    width: 200,
+    width: 300,
     padding: 10,
     backgroundColor: '#7fffd4',
     borderRadius: 15,
@@ -60,6 +61,14 @@ const styles = StyleSheet.create({
   },
   homeTxt:{
     fontSize:20
+  },
+  darkModeBtn: {
+    width: 300,
+    padding: 10,
+    backgroundColor: '#333',
+    borderRadius: 15,
+    alignItems: 'center',
+    marginTop: 20
   }
 });
 
