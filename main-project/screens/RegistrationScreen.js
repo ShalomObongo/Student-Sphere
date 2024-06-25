@@ -99,6 +99,8 @@ const RegistrationScreen = () => {
         role: role,
         phoneNumber: `${countryCode} ${phoneNumber}`,
         active: true,
+        password:password
+
       });
 
       await setDoc(doc(db, 'User roles', user.uid), {

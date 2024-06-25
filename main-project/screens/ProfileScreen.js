@@ -151,12 +151,15 @@ const styles = StyleSheet.create({
     },
     taskTxt: {
         fontSize: 20,
+        color:'#2EE49B'
     },
     unitTxt: {
         fontSize: 20,
+        color:'#2EE49B'
     },
     editTxt: {
         fontSize: 20,
+        color:'#2EE49B'
     },
     logoutTxt: {
         fontSize: 20,
