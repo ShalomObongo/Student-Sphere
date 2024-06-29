@@ -4,6 +4,7 @@ import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { Icon } from 'react-native-elements';
 
 const db = getFirestore();
 
@@ -31,7 +32,14 @@ const DashboardScreen = () => {
     /* Navigate to the Profile screen when the "Go to profile" button is pressed */
     navigation.navigate('Profile screen')
   }
-  
+
+  const GoToAnnounce=()=>{
+    navigation.navigate('Announcements')
+  }
+
+  const GoToUnits=()=>{
+    navigation.navigate('Units')
+  }
 
   const handleSignout = () => {
     /* Handle sign-out functionality */
@@ -52,15 +60,30 @@ const DashboardScreen = () => {
 
   return (
     <View style={styles.container}>
-     
-      <Text style={styles.title}>Dashboard</Text>
 
-      <Text style={styles.welcomeTxt}>Welcome to the dashboard, {firstName}</Text>
-      <Text>Email: {auth.currentUser?.email}</Text>
+      <View style={styles.greeting}>
+        <Text style={styles.welcomeTxt}>Welcome back, {firstName}</Text>
+        {/* <Text>Email: {auth.currentUser?.email}</Text> */}
+      </View>
 
-      <TouchableOpacity style={styles.profile} onPress={GoToProfile}>
-          <Text style={styles.profileTxt}>Go to profile</Text>
-        </TouchableOpacity>  
+      <View style={styles.profileContainer}>
+        <TouchableOpacity style={styles.profile} onPress={GoToProfile}>
+            <Icon style={styles.icon} size={65} color='black' name='account' type='material-community'></Icon>
+            <Text style={styles.profileTxt}>Profile</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.profile} onPress={GoToAnnounce}>
+            <Icon style={styles.icon} size={65} color='black'  name='message-alert-outline' type='material-community'></Icon>
+            <Text style={styles.profileTxt} onPress={GoToAnnounce}>Announcements</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.profile} onPress={GoToUnits}>
+            <Icon style={styles.icon} size={65} color='black'  name='book-open-page-variant-outline' type='material-community'></Icon>
+            <Text style={styles.profileTxt} onPress={GoToUnits}>Units</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.profile}>
+            <Icon style={styles.icon} size={65} color='black'  name='clock-time-eight' type='material-community'></Icon>
+            <Text style={styles.profileTxt}>Tasks</Text>
+          </TouchableOpacity>
+      </View>  
       
       <TouchableOpacity style={styles.logout} onPress={handleSignout}>
 
@@ -77,20 +100,34 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
+
+  },
+  greeting:{
+    top:0
+  },
+  profileContainer:{
+    flexDirection: 'row',
+    flexWrap:'wrap',
+    width: '80%',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    // backgroundColor:'lightgray'
   },
   profile:{
-    width: 300,
+    width: '45%',
+    height:130,
     padding: 10,
     backgroundColor: 'grey',
     borderRadius: 15,
     alignItems: 'center',
     marginTop: 10,
+    justifyContent:'space-between'
   },
   profileTxt:{
     fontWeight: 'bold',
-    fontSize: 15,
+    fontSize: 14,
     marginRight: 10,
-    color:'lightblue'
+    color:'#2EE49B'
   },
   title: {
     fontSize: 30,
@@ -114,23 +151,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 15,
     marginRight: 10,
-    color:'lightblue'
+    color:'#2EE49B'
   },
-  lockScreen: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  lockScreenText: {
-    fontSize: 25,
-    color: 'white',
-  },
+  icon:{
+    size:20,
+    color:'red',
+  }
 });
 
 export default DashboardScreen;
