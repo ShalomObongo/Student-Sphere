@@ -12,6 +12,9 @@ import ProfileScreen from './screens/ProfileScreen';
 import ResetPwd from './screens/resetPwd';
 import TaskScreen from './screens/taskscreen';
 import UnitScreen from './screens/unitscreen';
+import Units from './screens/Units';
+import Announcements from './screens/Announcements';
+import UnitView from './screens/UnitView';
 
 const Stack = createNativeStackNavigator();
 
@@ -63,6 +66,21 @@ export default function App() {
           name="Unit Screen"
           component={UnitScreen}
           options={{ title: 'Unit Screen' }}
+        />
+        <Stack.Screen
+          name="Units"
+          component={Units}
+          options={{ title: 'Units' }}
+        />
+        <Stack.Screen
+          name="Announcements"
+          component={Announcements}
+          options={{ title: 'Announcements' }}
+        />
+        <Stack.Screen
+          name="View Unit"
+          component={UnitView}
+          options={{ title: 'View Unit' }}
         />
       </Stack.Navigator>
       <StatusBar style="auto" />
