@@ -8,13 +8,16 @@ import { getFirestore, doc, getDoc } from "firebase/firestore";
 const db = getFirestore();
 
 const DashboardScreen = () => {
+  /* State variable to store the user's first name */
   const [firstName, setFirstName] = useState('');
   const navigation = useNavigation();
 
   useEffect(() => {
+    /* Fetch the user's name from Firestore when the component mounts */
     const fetchUserName = async () => {
       const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
       if (userDoc.exists()) {
+        /* Set the state with the fetched first name */
         setFirstName(userDoc.data().firstName);
       } else {
         console.log("No such document!");
@@ -25,11 +28,13 @@ const DashboardScreen = () => {
   }, []);
 
   const GoToProfile=()=>{
+    /* Navigate to the Profile screen when the "Go to profile" button is pressed */
     navigation.navigate('Profile screen')
   }
   
 
   const handleSignout = () => {
+    /* Handle sign-out functionality */
     signOut(auth)
       .then(() => {
         Alert.alert('Logout Successful');
