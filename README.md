@@ -47,7 +47,7 @@
 
 
 # Project Structure
-Student-Sphere/
+<!-- Student-Sphere/
 |__ .expo/
 |__ main-project/
 |    |__ .expo/
@@ -70,15 +70,33 @@ Student-Sphere/
 |    |    |__ViewAnnouncements.js               # User can view more information about a particular announcement
 |    |
 |    |__ .gitignore                             # Files excluded from Git tracking
-|    |__ App.js                                 #
-|    |__ app.json                               #
+|    |__ App.js                                 # Serves as entry point of application
+|    |__ app.json                               # Config file that holds metadata about the application
 |    |__ babel.config.js                        # Responsible for configuring Babel
-|    |__ firebase.js                            # Holds configuration details for the Projects Firebase database
+|    |__ firebase.js                            # Holds configuration information for the Project's Firebase database
 |    |__ package-lock.json                      #
 |    |__ package.json                           #
 |
 |__ node_modules/                                #
 |__ package-lock.json                           #
 |__ package.json                                #
-|__ README.md                                   # Holds this project's documentation
+|__ README.md                                   # Holds this project's documentation -->
+
+
+
+
+
+Student-Sphere/
+├── main-project
+│   ├── App.js                                  # Serves as entry point of application
+│   ├── app.json                                # Config file that holds metadata about the application
+│   ├── assets                                  # This folder holds all the images that are used in this project
+│   ├── babel.config.js                         # Responsible for configuring Babel    
+│   ├── firebase.js                             # Holds configuration information for the Project's Firebase database
+│   ├── package.json                            # List the dependencies and scripts needed for the project
+│   ├── package-lock.json                       # Captures exact versions of packages and dependencies
+│   └── screens                                 # Contains screens that the user uses to interact witht the application
+├── package.json                                #Lists the expo dependencies needed for the project
+├── package-lock.json                           # Captures exact versions of Expo dependencies
+└── README.md                                   # Holds the project's documentation 
 
