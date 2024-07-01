@@ -79,7 +79,7 @@ const DashboardScreen = () => {
             <Icon style={styles.icon} size={65} color='black'  name='book-open-page-variant-outline' type='material-community'></Icon>
             <Text style={styles.profileTxt} onPress={GoToUnits}>Units</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.profile}>
+          <TouchableOpacity style={styles.profile} onPress={() => navigation.navigate('Task Screen')}>
             <Icon style={styles.icon} size={65} color='black'  name='clock-time-eight' type='material-community'></Icon>
             <Text style={styles.profileTxt}>Tasks</Text>
           </TouchableOpacity>
