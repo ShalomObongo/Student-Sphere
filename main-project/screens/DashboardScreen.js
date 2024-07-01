@@ -63,19 +63,19 @@ const DashboardScreen = () => {
 
       <View style={styles.profileContainer}>
         <TouchableOpacity style={styles.profile} onPress={GoToProfile}>
-            <Icon style={styles.icon} size={65} color='black' name='account' type='material-community'></Icon>
+            <Icon style={styles.icon} size={65} color='#fff' name='account' type='material-community'></Icon>
             <Text style={styles.profileTxt}>Profile</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.profile} onPress={GoToAnnounce}>
-            <Icon style={styles.icon} size={65} color='black'  name='message-alert-outline' type='material-community'></Icon>
+            <Icon style={styles.icon} size={65} color='#fff'  name='message-alert-outline' type='material-community'></Icon>
             <Text style={styles.profileTxt} onPress={GoToAnnounce}>Announcements</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.profile} onPress={GoToUnits}>
-            <Icon style={styles.icon} size={65} color='black'  name='book-open-page-variant-outline' type='material-community'></Icon>
+            <Icon style={styles.icon} size={65} color='#fff'  name='book-open-page-variant-outline' type='material-community'></Icon>
             <Text style={styles.profileTxt} onPress={GoToUnits}>Units</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.profile}>
-            <Icon style={styles.icon} size={65} color='black'  name='clock-time-eight' type='material-community'></Icon>
+            <Icon style={styles.icon} size={65} color='#fff'  name='clock-time-eight' type='material-community'></Icon>
             <Text style={styles.profileTxt}>Tasks</Text>
           </TouchableOpacity>
       </View>  
@@ -94,64 +94,66 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-
+    backgroundColor: '#f0f4f7',
+    paddingHorizontal: 20,
   },
-  greeting:{
-    top:0
+  greeting: {
+    marginBottom: 20,
   },
-  profileContainer:{
+  profileContainer: {
     flexDirection: 'row',
-    flexWrap:'wrap',
-    width: '80%',
+    flexWrap: 'wrap',
+    width: '100%',
     justifyContent: 'space-between',
     marginTop: 20,
-    // backgroundColor:'lightgray'
   },
-  profile:{
+  profile: {
     width: '45%',
-    height:130,
-    padding: 10,
-    backgroundColor: 'grey',
+    height: 150,
+    padding: 20,
+    backgroundColor: '#4b7bec',
     borderRadius: 15,
     alignItems: 'center',
-    marginTop: 10,
-    justifyContent:'space-between'
+    marginVertical: 10,
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  profileTxt:{
+  profileTxt: {
     fontWeight: 'bold',
-    fontSize: 14,
-    marginRight: 10,
-    color:'#2EE49B'
+    fontSize: 16,
+    color: '#fff',
   },
   title: {
     fontSize: 30,
     fontWeight: 'bold',
     marginBottom: 20,
   },
-  welcomeTxt:{
-    fontSize: 20
+  welcomeTxt: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#333',
   },
-  logout:{
-    width: 300,
-    padding: 10,
-    backgroundColor: 'grey',
-    borderRadius: 15,
+  logout: {
+    width: '80%',
+    padding: 15,
+    backgroundColor: '#fc5c65',
+    borderRadius: 10,
     alignItems: 'center',
-    marginTop: 10,
-    position:'absolute',
-    bottom:30,
+    marginTop: 20,
+    position: 'absolute',
+    bottom: 30,
   },
-  logoutTxt:{
+  logoutTxt: {
     fontWeight: 'bold',
-    fontSize: 15,
-    marginRight: 10,
-    color:'#2EE49B'
+    fontSize: 16,
+    color: '#fff',
   },
-  icon:{
-    size:20,
-    color:'red',
-  }
+  
+
 });
 
 export default DashboardScreen;

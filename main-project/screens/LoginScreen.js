@@ -47,9 +47,9 @@ const LoginScreen = () => {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
-      <View style={styles.container}>
+      <View style={styles.innerContainer}>
         <Text style={styles.title}>Log in to your account</Text>
-        <Text style={styles.secondtitle}>Welcome back! Please enter your details</Text>
+        <Text style={styles.subtitle}>Welcome back! Please enter your details</Text>
         <View style={styles.inputBox}>
           {/* <Text style={styles.text}>Email:</Text> */}
           <TextInput
@@ -78,14 +78,14 @@ const LoginScreen = () => {
             onPress={toggleShowPassword} 
           /> 
         </View>
-        <Text>Don't have an account?
-          <Text style={{color:'blue'}} onPress={gotoRegister}>Sign up</Text>
+        <Text style={styles.signupText}>Don't have an account?
+          <Text style={styles.signupLink} onPress={gotoRegister}>Sign up</Text>
           </Text>
         <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-          <Text style={styles.loginbtnText}>Login</Text>
+          <Text style={styles.btnText}>Login</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.resetBtn} onPress={handlePasswordReset}>
-          <Text style={styles.resetBtnText}>Reset Password</Text>
+          <Text style={styles.btnText}>Reset Password</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -98,72 +98,76 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
+    paddingHorizontal: 20,
+  },
+  innerContainer: {
+    width: '100%',
+    maxWidth: 400,
+    alignItems: 'center',
   },
   title: {
-    fontSize: 40,
+    fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: '#333',
+    textAlign: 'center',
   },
-  secondtitle:{
+  subtitle: {
     fontSize: 18,
-    // fontWeight: 'bold',
+    color: '#666',
     marginBottom: 20,
-    // color:'grey'
-    // alignItems:'flex-start'
-  },
-  input: {
-    flex: 1,
-    width: '100%',
-    height: 60,
-    fontSize: 18,
-    borderWidth: 0,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    marginBottom: 10,
-    padding: 10,
-    backgroundColor:'lightgray',
-    color:'black'
+    textAlign: 'center',
   },
   inputBox: {
     flexDirection: 'row',
     alignItems: 'center',
+    width: '100%',
     marginBottom: 20,
-    width: '80%',
-    backgroundColor:'lightgray',
-    borderRadius:10
+  },
+  input: {
+    flex: 1,
+    height: 50,
+    paddingHorizontal: 15,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  icon: {
+    paddingHorizontal: 10,
   },
   loginBtn: {
-    width: 300,
-    padding: 10,
-    backgroundColor: 'black',
-    borderRadius: 15,
+    width: '100%',
+    backgroundColor: '#007bff',
+    borderRadius: 10,
+    paddingVertical: 15,
     alignItems: 'center',
-    marginTop: 10,
-  },
-  loginbtnText: {
-    color: 'white',
-    fontSize: 20,
+    marginTop: 20,
   },
   resetBtn: {
-    width: 300,
-    padding: 10,
-    backgroundColor: 'red',
-    borderRadius: 15,
+    width: '100%',
+    backgroundColor: '#dc3545',
+    borderRadius: 10,
+    paddingVertical: 15,
     alignItems: 'center',
     marginTop: 10,
   },
-  resetBtnText: {
-    color: 'white',
-    fontSize: 20,
-  },
-  text: {
+  btnText: {
+    color: '#fff',
+    fontSize: 18,
     fontWeight: 'bold',
-    fontSize: 20,
-    marginRight: 10,
   },
-  icon:{
-    marginRight:10
-  }
+  signupText: {
+    marginTop: 20,
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+  },
+  signupLink: {
+    color: '#007bff',
+    fontWeight: 'bold',
+  },
 });
 
 export default LoginScreen;

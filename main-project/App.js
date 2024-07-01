@@ -15,6 +15,8 @@ import UnitScreen from './screens/unitscreen';
 import Units from './screens/Units';
 import Announcements from './screens/Announcements';
 import UnitView from './screens/UnitView';
+import ViewAnnouncement from './screens/ViewAnnouncement';
+import AddCourseContent from './screens/AddCourseContent';
 
 const Stack = createNativeStackNavigator();
 
@@ -81,6 +83,16 @@ export default function App() {
           name="View Unit"
           component={UnitView}
           options={{ title: 'View Unit' }}
+        />
+        <Stack.Screen
+          name="View Announcement"
+          component={ViewAnnouncement}
+          options={{ title: 'View Announcement' }}
+        />
+        <Stack.Screen
+          name="Add course content"
+          component={AddCourseContent}
+          options={{ title: 'Add course content' }}
         />
       </Stack.Navigator>
       <StatusBar style="auto" />
