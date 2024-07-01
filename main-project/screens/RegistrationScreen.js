@@ -99,6 +99,8 @@ const RegistrationScreen = () => {
         role: role,
         phoneNumber: `${countryCode} ${phoneNumber}`,
         active: true,
+        password:password
+
       });
 
       await setDoc(doc(db, 'User roles', user.uid), {
@@ -137,11 +139,15 @@ const RegistrationScreen = () => {
     setShowConfirm(!showConfirmation);
   };
 
+  const gotoLogin=()=>{
+    navigation.navigate('Login')
+  }
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
-      <View style={styles.container}>
+      <View style={styles.innerContainer}>
         <Text style={styles.title}>Create account</Text>
-        <Text style={styles.secondtitle}>Welcome! Please enter your details.</Text>
+        <Text style={styles.subtitle}>Welcome! Please enter your details.</Text>
         <View style={styles.inputBox}>
           <TextInput
             style={styles.input}
@@ -215,8 +221,9 @@ const RegistrationScreen = () => {
             dropDownContainerStyle={styles.dropdownContainerStyle}
           />
         </View>
+        <Text style={styles.loginText}>Already have an account? <Text style={styles.loginLink} onPress={gotoLogin}>Login</Text></Text>
         <TouchableOpacity style={styles.registerBtn} onPress={handleRegistration}>
-          <Text style={styles.registerbtnTxt}>Register</Text>
+          <Text style={styles.registerBtnText}>Register</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -230,71 +237,94 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
   },
+  innerContainer: {
+    width: '100%',
+    maxWidth: 400,
+    paddingHorizontal: 20,
+  },
   title: {
-    fontSize: 40,
+    fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 20,
+    textAlign: 'center',
   },
-  secondtitle: {
+  subtitle: {
     fontSize: 18,
     marginBottom: 20,
-  },
-  input: {
-    flex: 1,
-    height: 40,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    fontSize: 15,
-    backgroundColor: 'lightgray',
-    color: 'black',
-    borderWidth: 0,
+    textAlign: 'center',
   },
   inputBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
-    width: '80%',
-    backgroundColor: 'lightgray',
-    borderRadius: 5,
-    marginBottom: 20,
-    zIndex: 1,
-  },
-  picker: {
     width: '100%',
+    marginBottom: 20,
   },
-  dropdownContainerStyle: {
-    width: '80%',
-    zIndex: 100,
-  },
-  registerBtn: {
-    width: 300,
-    padding: 10,
-    backgroundColor: 'black',
-    borderRadius: 15,
-    alignItems: 'center',
-    marginTop: 10,
-    zIndex: 0,
-  },
-  registerbtnTxt: {
-    color: 'white',
-    fontSize: 20,
-  },
-  text: {
-    marginLeft: 10,
-    color: 'darkgray',
+  input: {
+    flex: 1,
+    height: 50,
+    paddingHorizontal: 15,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#ccc',
   },
   icon: {
-    marginRight: 20,
+    paddingHorizontal: 10,
   },
-  phoneInput: { 
-    height: 40, 
-    width: '83%', 
-    borderWidth: 1, 
-    borderColor: '#ccc', 
-    paddingHorizontal: 5, 
-},
+  phoneInput: {
+    flex: 1,
+    height: 50,
+    paddingHorizontal: 15,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  countryPickerText: {
+    marginLeft: 10,
+    color: '#007bff',
+    fontSize: 16,
+  },
+  picker: {
+    flex: 1,
+    height: 50,
+    paddingHorizontal: 15,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  dropdownContainerStyle: {
+    marginTop: 2,
+  },
+  registerBtn: {
+    width: '100%',
+    height: 50,
+    backgroundColor: 'black',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  registerBtnText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  loginLink: {
+    marginTop: 20,
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+  },
+  loginText: {
+    color: '#007bff',
+    fontWeight: 'bold',
+  },
+
 });
 
 export default RegistrationScreen;
