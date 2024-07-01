@@ -9,13 +9,16 @@ import { Icon } from 'react-native-elements';
 const db = getFirestore();
 
 const DashboardScreen = () => {
+  /* State variable to store the user's first name */
   const [firstName, setFirstName] = useState('');
   const navigation = useNavigation();
 
   useEffect(() => {
+    /* Fetch the user's name from Firestore when the component mounts */
     const fetchUserName = async () => {
       const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
       if (userDoc.exists()) {
+        /* Set the state with the fetched first name */
         setFirstName(userDoc.data().firstName);
       } else {
         console.log("No such document!");
@@ -26,6 +29,7 @@ const DashboardScreen = () => {
   }, []);
 
   const GoToProfile=()=>{
+    /* Navigate to the Profile screen when the "Go to profile" button is pressed */
     navigation.navigate('Profile screen')
   }
 
@@ -38,6 +42,7 @@ const DashboardScreen = () => {
   }
 
   const handleSignout = () => {
+    /* Handle sign-out functionality */
     signOut(auth)
       .then(() => {
         Alert.alert('Logout Successful');
@@ -74,8 +79,9 @@ const DashboardScreen = () => {
             <Icon style={styles.icon} size={65} color='#fff'  name='book-open-page-variant-outline' type='material-community'></Icon>
             <Text style={styles.profileTxt} onPress={GoToUnits}>Units</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.profile}>
-            <Icon style={styles.icon} size={65} color='#fff'  name='clock-time-eight' type='material-community'></Icon>
+         
+          <TouchableOpacity style={styles.profile} onPress={() => navigation.navigate('Task Screen')}>
+            <Icon style={styles.icon} size={65} color='black'  name='clock-time-eight' type='material-community'></Icon>
             <Text style={styles.profileTxt}>Tasks</Text>
           </TouchableOpacity>
       </View>  

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { auth, db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -26,6 +27,12 @@ const EditProfile = () => {
 
     return unsubscribe;
   }, []);
+  const navigation = useNavigation();
+  const GoToResetPwd = () => {
+    /* Navigate to the Reset password screen when the "Go to Reset Password" button is pressed */
+    navigation.navigate('Reset password');
+  };
+
 
   const handleUpdate = async () => {
     if (!firstName) {
@@ -78,8 +85,17 @@ const EditProfile = () => {
             style={styles.phoneInput}
           />
         </View>
+
+
         <TouchableOpacity style={styles.editBtn} onPress={handleUpdate}>
           <Text style={styles.editbtnText}>Update</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navBtn}
+          onPress={GoToResetPwd}
+        >
+          <Text style={styles.navBtnText}>Go to Reset Password</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -134,18 +150,28 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 20,
   },
-  phoneInput: { 
-    height: 40, 
-    width: '83%', 
-    borderWidth: 1, 
-    borderColor: '#ccc', 
-    paddingHorizontal: 5, 
-},
-text: {
-  marginLeft: 10,
-  color: 'darkgray',
-},
-
+  phoneInput: {
+    height: 40,
+    width: '83%',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    paddingHorizontal: 5,
+  },
+  text: {
+    marginLeft: 10,
+    color: 'darkgray',
+  },
+  navBtn: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#007bff',
+    borderRadius: 15,
+    alignItems: 'center',
+  },
+  navBtnText: {
+    color: 'white',
+    fontSize: 20,
+  },
 
 });
 

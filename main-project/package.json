@@ -19,6 +19,7 @@
     "@react-navigation/native-stack": "^6.9.26",
     "expo": "~51.0.8",
     "expo-local-authentication": "~14.0.1",
+    "expo-notifications": "^0.28.9",
     "expo-secure-store": "~13.0.1",
     "expo-status-bar": "~1.12.1",
     "firebase": "^10.12.0",

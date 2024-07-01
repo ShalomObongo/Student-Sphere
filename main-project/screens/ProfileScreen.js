@@ -7,14 +7,12 @@ import { signOut } from 'firebase/auth';
 
 const db = getFirestore();
 
-const Sections = [];
-
 const ProfileScreen = () => {
     const navigation = useNavigation();
     const [firstName, setFirstName] = useState('');
-    const [role,setRole]=useState('');
-    const [email,setEmail]=useState('');
-    const [phoneNumber,setNumber]=useState('');
+    const [role, setRole] = useState('');
+    const [email, setEmail] = useState('');
+    const [phoneNumber, setNumber] = useState('');
 
     useEffect(() => {
         const fetchUserDetails = async () => {
@@ -23,7 +21,7 @@ const ProfileScreen = () => {
                 setFirstName(userDoc.data().firstName);
                 setEmail(userDoc.data().email);
                 setRole(userDoc.data().role);
-                setNumber(userDoc.data().phoneNumber)
+                setNumber(userDoc.data().phoneNumber);
             } else {
                 console.log("No such document!");
             }
@@ -31,54 +29,55 @@ const ProfileScreen = () => {
 
         fetchUserDetails();
     }, []);
+
     const handleSignout = () => {
         signOut(auth)
-          .then(() => {
-            Alert.alert('Logout Successful');
-            console.log('Successful logout')
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Home' }],
+            .then(() => {
+                Alert.alert('Logout Successful');
+                console.log('Successful logout');
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'Home' }],
+                });
+            })
+            .catch((error) => {
+                Alert.alert('Logout Failed', error.message);
+                console.error('Sign out error', error);
             });
-          })
-          .catch((error) => {
-            Alert.alert('Logout Failed', error.message);
-            console.error('Sign out error', error);
-          });
-      };
+    };
 
     const gotoEdit = () => {
-        navigation.navigate('Edit Profile')
-    }
-    const gotoTasks=()=>{
-        navigation.navigate('Task Screen')
-      }
-      const gotoUnits=()=>{
-        navigation.navigate('Unit Screen')
-      }
+        navigation.navigate('Edit Profile');
+    };
 
+    const gotoTasks = () => {
+        navigation.navigate('Task Screen');
+    };
+
+    const gotoUnits = () => {
+        navigation.navigate('Unit Screen');
+    };
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <ScrollView style={styles.container}>
                 <View style={styles.profile}>
                     <Text>Hello, {firstName}</Text>
-                    {/* <Text style={styles.profileSecond}></Text> */}
                     <Text style={styles.profileSecond}>Email: {email}</Text>
                     <Text style={styles.profileSecond}>Role: {role}</Text>
                     <Text style={styles.profileSecond}>Number: {phoneNumber}</Text>
-                    
                 </View>
                 <View style={styles.profileNaviagtion}>
                     <TouchableOpacity style={styles.taskBtn} onPress={gotoTasks}><Text style={styles.taskTxt}>View tasks</Text></TouchableOpacity>
                     <TouchableOpacity style={styles.unitBtn} onPress={gotoUnits}><Text style={styles.unitTxt}>View units</Text></TouchableOpacity>
                     <TouchableOpacity style={styles.editBtn} onPress={gotoEdit}><Text style={styles.editTxt}>Edit Profile</Text></TouchableOpacity>
-                    <TouchableOpacity style={styles.logoutBtn} onPress={handleSignout}><Text style={styles.logoutTxt} >Logout</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.logoutBtn} onPress={handleSignout}><Text style={styles.logoutTxt}>Logout</Text></TouchableOpacity>
                 </View>
             </ScrollView>
         </SafeAreaView>
     );
 };
+
 const styles = StyleSheet.create({
     container: {
         paddingVertical: 24,
@@ -164,8 +163,10 @@ const styles = StyleSheet.create({
         color: '#fff',
       },
       logoutTxt: {
+    
         fontSize: 20,
         color: '#fff',
       },
 });
+
 export default ProfileScreen;
