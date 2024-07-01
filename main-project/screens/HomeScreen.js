@@ -17,12 +17,12 @@ const Homescreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Student-Sphere</Text>
-      <Text style={styles.homeTxt}>What would you like to do?</Text>
+      <Text style={styles.subtitle}>What would you like to do?</Text>
       <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-        <Text style={styles.homeTxt}>Login</Text>
+        <Text style={styles.btnText}>Login</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.registerBtn} onPress={handleRegister}>
-        <Text style={styles.homeTxt}>Register</Text>
+        <Text style={styles.btnText}>Register</Text>
       </TouchableOpacity>
     </View>
   );
@@ -34,42 +34,44 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
+    paddingHorizontal: 20,
   },
   title: {
-    fontSize: 25,
+    fontSize: 36,
     fontWeight: 'bold',
+    color: '#2E86C1',
     marginBottom: 20,
+    textAlign: 'center',
   },
-
-  loginBtn:{
-    width: 300,
-    padding: 10,
-    backgroundColor: 'lightgrey',
-    borderRadius: 15,
+  subtitle: {
+    fontSize: 24,
+    color: '#6c757d',
+    marginBottom: 40,
+    textAlign: 'center',
+  },
+  loginBtn: {
+    width: '100%',
+    paddingVertical: 15,
+    backgroundColor: '#5DADE2',
+    borderRadius: 10,
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom:20
+    marginBottom: 20,
+    elevation: 3,
   },
-
-  registerBtn:{
-    width: 300,
-    padding: 10,
-    backgroundColor: '#7fffd4',
-    borderRadius: 15,
+  registerBtn: {
+    width: '100%',
+    paddingVertical: 15,
+    backgroundColor: '#48C9B0',
+    borderRadius: 10,
     alignItems: 'center',
-    marginTop: 10
+    marginTop: 10,
+    elevation: 3,
   },
-  homeTxt:{
-    fontSize:20
+  btnText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold',
   },
-  darkModeBtn: {
-    width: 300,
-    padding: 10,
-    backgroundColor: '#333',
-    borderRadius: 15,
-    alignItems: 'center',
-    marginTop: 20
-  }
 });
 
 export default Homescreen;

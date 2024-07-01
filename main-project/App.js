@@ -15,6 +15,8 @@ import UnitScreen from './screens/unitscreen';
 import Units from './screens/Units';
 import Announcements from './screens/Announcements';
 import UnitView from './screens/UnitView';
+import ViewAnnouncement from './screens/ViewAnnouncement';
+import AddCourseContent from './screens/AddCourseContent';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
@@ -57,10 +59,11 @@ async function registerForPushNotificationsAsync() {
 
     return token;
 }
-
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+
+
     const [tasks, setTasks] = React.useState([]);
 
     useEffect(() => {
@@ -74,7 +77,7 @@ export default function App() {
                     name="Home"
                     component={HomeScreen}
                     options={{ title: 'Welcome' }}
-                />
+a                 />
                 <Stack.Screen
                     name="Login"
                     component={LoginScreen}
@@ -130,7 +133,18 @@ export default function App() {
                     component={UnitView}
                     options={{ title: 'View Unit' }}
                 />
+                <Stack.Screen
+                    name="View Announcement"
+                    component={ViewAnnouncement}
+                    options={{ title: 'View Announcement' }}
+                />
+                <Stack.Screen
+                    name="Add course content"
+                    component={AddCourseContent}
+                    options={{ title: 'Add course content' }}
+                />
             </Stack.Navigator>
+
             <StatusBar style="auto" />
         </NavigationContainer>
     );

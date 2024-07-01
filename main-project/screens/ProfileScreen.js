@@ -81,103 +81,92 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
     container: {
         paddingVertical: 24,
-    },
-    profile: {
+        backgroundColor: '#f5f5f5',
+      },
+      profile: {
         padding: 24,
         alignItems: 'center',
-        justifyContent: 'center'
-    },
-    profileName: {
-        marginTop: 20,
-        fontSize: 19,
-        fontWeight: '600',
+        justifyContent: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        marginHorizontal: 20,
+        elevation: 3,
+        marginBottom: 20,
+      },
+      welcomeTxt: {
+        fontSize: 24,
+        fontWeight: 'bold',
         color: '#414d63',
-        textAlign: 'center'
-    },
-    profileSecond: {
+        textAlign: 'center',
+        marginBottom: 10,
+      },
+      profileSecond: {
         marginTop: 5,
         fontSize: 16,
-        color: '#989898',
-        textAlign: 'center'
-    },
-    profileNaviagtion: {
+        color: '#757575',
+        textAlign: 'center',
+      },
+      profileNavigation: {
         padding: 24,
         alignItems: 'center',
-        justifyContent: 'center'
-    },
-    taskBtn: {
-        backgroundColor: 'grey',
+        justifyContent: 'center',
+      },
+      taskBtn: {
+        backgroundColor: '#4CAF50',
         width: '100%',
-        borderRadius: 2,
+        borderRadius: 10,
         marginTop: 20,
         height: 50,
         alignItems: 'center',
-        justifyContent: 'center'
-    },
-    unitBtn: {
-        backgroundColor: 'grey',
+        justifyContent: 'center',
+        elevation: 2,
+      },
+      unitBtn: {
+        backgroundColor: '#2196F3',
         width: '100%',
-        borderRadius: 2,
+        borderRadius: 10,
         marginTop: 20,
         height: 50,
         alignItems: 'center',
-        justifyContent: 'center'
-    },
-    editBtn: {
-        backgroundColor: 'grey',
+        justifyContent: 'center',
+        elevation: 2,
+      },
+      editBtn: {
+        backgroundColor: '#FFC107',
         width: '100%',
-        borderRadius: 2,
+        borderRadius: 10,
         marginTop: 20,
         height: 50,
         alignItems: 'center',
-        justifyContent: 'center'
-    },
-    resetBtn: {
-        backgroundColor: 'grey',
+        justifyContent: 'center',
+        elevation: 2,
+      },
+      logoutBtn: {
         width: '100%',
-        borderRadius: 2,
-        marginTop: 20,
-        height: 50,
+        padding: 15,
+        backgroundColor: '#E53935',
+        borderRadius: 10,
         alignItems: 'center',
-        justifyContent: 'center'
-    },
-    welcomeTxt: {
+        marginTop: 30,
+        elevation: 2,
+      },
+      taskTxt: {
         fontSize: 20,
-        fontWeight: '600',
-        color: '#414d63',
-        textAlign: 'center'
-    },
-    taskTxt: {
+        color: '#fff',
+      },
+      unitTxt: {
         fontSize: 20,
-        color: '#2EE49B'
-    },
-    unitTxt: {
+        color: '#fff',
+      },
+      editTxt: {
         fontSize: 20,
-        color: '#2EE49B'
-    },
-    editTxt: {
+        color: '#fff',
+      },
+      logoutTxt: {
+    
         fontSize: 20,
-        color: '#2EE49B'
-    },
-    logoutTxt: {
-        fontSize: 20,
-    },
-    resetTxt: {
-        fontSize: 20
-    },
-    logoutBtn: {
-        width: 300,
-        padding: 10,
-        backgroundColor: 'red',
-        borderRadius: 15,
-        alignItems: 'center',
-        marginTop: 10,
-        bottom: -100,
-    },
-    logoutBtnText: {
-        color: 'white',
-        fontSize: 20,
-    },
+        color: '#fff',
+      },
 });
 
 export default ProfileScreen;
