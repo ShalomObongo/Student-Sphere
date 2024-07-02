@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { KeyboardAvoidingView, View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, Button, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { KeyboardAvoidingView, View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, Button, ActivityIndicator, Image } from 'react-native';
 import { auth, db } from '../firebase';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
@@ -8,6 +8,7 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import CountryPicker from 'react-native-country-picker-modal';
 import PhoneInput from 'react-native-phone-input';
+import { Animated } from 'react-native';
 
 const RegistrationScreen = () => {
   const [email, setEmail] = useState('');
@@ -165,8 +166,29 @@ const RegistrationScreen = () => {
     navigation.navigate('Login')
   }
 
+  const spinValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(spinValue, {
+        toValue: 1,
+        duration: 10000, // 10 seconds for a full rotation
+        useNativeDriver: true,
+      })
+    ).start();
+  }, [spinValue]);
+
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
+      <Animated.Image
+        source={require('../images/logo2.png')}
+        style={[styles.logo, { transform: [{ rotate: spin }] }]}
+      />
       <View style={styles.innerContainer}>
         <Text style={styles.title}>Create account</Text>
         <Text style={styles.subtitle}>Welcome! Please enter your details.</Text>
@@ -196,13 +218,13 @@ const RegistrationScreen = () => {
             value={password}
             onChangeText={setPassword}
           />
-          <MaterialCommunityIcons
-            name={showPassword ? 'eye-off' : 'eye'}
-            size={24}
-            color="#aaa"
-            style={styles.icon}
-            onPress={toggleShowPassword}
-          />
+          <TouchableOpacity onPress={toggleShowPassword} style={styles.iconContainer}>
+            <MaterialCommunityIcons
+              name={showPassword ? 'eye-off' : 'eye'}
+              size={24}
+              color="#aaa"
+            />
+          </TouchableOpacity>
         </View>
         <View style={styles.inputBox}>
           <TextInput
@@ -212,18 +234,18 @@ const RegistrationScreen = () => {
             value={confirmPassword}
             onChangeText={setConfirmPassword}
           />
-          <MaterialCommunityIcons
-            name={showConfirmation ? 'eye-off' : 'eye'}
-            size={24}
-            color="#aaa"
-            style={styles.icon}
-            onPress={toggleConfirm}
-          />
+          <TouchableOpacity onPress={toggleConfirm} style={styles.iconContainer}>
+            <MaterialCommunityIcons
+              name={showConfirmation ? 'eye-off' : 'eye'}
+              size={24}
+              color="#aaa"
+            />
+          </TouchableOpacity>
         </View>
         <View style={styles.inputBox}>
-        <Text style={styles.text}>Phone:</Text>
+        {/* <Text style={styles.text}>Phone:</Text> */}
           <PhoneInput
-            placeholder="Input phone number"
+            initialValue={phoneNumber || '+254'}
             value={phoneNumber}
             onChangePhoneNumber={(number) => setPhoneNumber(number)}
             onPressFlag={toggleCountryPicker}
@@ -244,6 +266,8 @@ const RegistrationScreen = () => {
           />
         </View>
         <Text style={styles.loginText}>Already have an account? <Text style={styles.loginLink} onPress={gotoLogin}>Login</Text></Text>
+      </View>
+      <View style={styles.buttonContainer}>
         <TouchableOpacity 
           style={styles.registerBtn} 
           onPress={handleRegistration}
@@ -281,10 +305,12 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: '#2E86C1',
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 18,
+    color: '#666',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -304,8 +330,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
   },
-  icon: {
-    paddingHorizontal: 10,
+  iconContainer: {
+    position: 'absolute',
+    right: 10,
   },
   phoneInput: {
     flex: 1,
@@ -316,11 +343,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: '#ccc',
-  },
-  countryPickerText: {
-    marginLeft: 10,
-    color: '#007bff',
-    fontSize: 16,
+    marginBottom: 20,
   },
   picker: {
     flex: 1,
@@ -335,27 +358,37 @@ const styles = StyleSheet.create({
   dropdownContainerStyle: {
     marginTop: 2,
   },
-  registerBtn: {
-    width: '100%',
-    height: 50,
-    backgroundColor: 'black',
-    justifyContent: 'center',
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    width: '105%',
+    backgroundColor: '#2E86C1',
+    paddingVertical: 20,
     alignItems: 'center',
+    borderRadius: 30,
+  },
+  registerBtn: {
+    width: '75%',
+    paddingVertical: 15,
+    backgroundColor: '#000',
     borderRadius: 10,
-    marginTop: 20,
+    alignItems: 'center',
+    marginBottom: 20,
+    elevation: 3,
   },
   registerBtnText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },
-  loginLink: {
+  loginText: {
     marginTop: 20,
     fontSize: 16,
     color: '#555',
     textAlign: 'center',
+    marginBottom: 100,
   },
-  loginText: {
+  loginLink: {
     color: '#007bff',
     fontWeight: 'bold',
   },
@@ -368,6 +401,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  logo: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    opacity: 0.1,
+    transform: [{ translateX: -100 }, { translateY: -100 }],
   },
 });
 

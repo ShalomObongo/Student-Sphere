@@ -1,17 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Animated } from 'react-native';
 import { auth } from '../firebase';
-import { signOut } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Icon } from 'react-native-elements';
+import ProfileScreen from './ProfileScreen';
+import Announcements from './Announcements';
+import Units from './Units';
+import TaskScreen from './taskscreen';
+import TableOptions from './TableOptions';
 
 const db = getFirestore();
+const Tab = createBottomTabNavigator();
 
 const DashboardScreen = () => {
   const [firstName, setFirstName] = useState('');
   const [role, setRole] = useState('');
   const navigation = useNavigation();
+  const spinValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -30,69 +37,177 @@ const DashboardScreen = () => {
     fetchUserData();
   }, []);
 
-  const GoToProfile = () => {
-    navigation.navigate('Profile screen');
-  };
-
-  const GoToAnnounce = () => {
-    navigation.navigate('Announcements');
-  };
-
-  const handleSignout = () => {
-    signOut(auth)
-      .then(() => {
-        Alert.alert('Logout Successful');
-        console.log('Successful logout');
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Home' }],
-        });
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(spinValue, {
+        toValue: 1,
+        duration: 10000, // 10 seconds for a full rotation
+        useNativeDriver: true,
       })
-      .catch((error) => {
-        Alert.alert('Logout Failed', error.message);
-      });
+    ).start();
+  }, [spinValue]);
+
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const HomeScreen = () => {
+    const [upcomingDeadlines, setUpcomingDeadlines] = useState([]);
+    const [recentAnnouncements, setRecentAnnouncements] = useState([]);
+    const [quickAccess, setQuickAccess] = useState([]);
+    const [taskListPreview, setTaskListPreview] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      const fetchData = async () => {
+        setLoading(true);
+        try {
+          // Fetch upcoming deadlines
+          const deadlinesQuery = query(collection(db, 'Tasks'), where('userId', '==', auth.currentUser.uid));
+          const deadlinesSnapshot = await getDocs(deadlinesQuery);
+          const deadlines = deadlinesSnapshot.docs.map(doc => doc.data());
+          setUpcomingDeadlines(deadlines);
+
+          // Fetch recent announcements
+          const announcementsQuery = query(collection(db, 'Announcements'), where('Type', '==', 'General'));
+          const announcementsSnapshot = await getDocs(announcementsQuery);
+          const announcements = announcementsSnapshot.docs.map(doc => doc.data());
+          setRecentAnnouncements(announcements);
+
+          // Fetch quick access resources (example: most used units)
+          const unitsQuery = query(collection(db, 'Units'), where('userId', '==', auth.currentUser.uid));
+          const unitsSnapshot = await getDocs(unitsQuery);
+          const units = unitsSnapshot.docs.map(doc => doc.data());
+          setQuickAccess(units);
+
+          // Fetch task list preview
+          const tasksQuery = query(collection(db, 'Tasks'), where('userId', '==', auth.currentUser.uid));
+          const tasksSnapshot = await getDocs(tasksQuery);
+          const tasks = tasksSnapshot.docs.map(doc => doc.data());
+          setTaskListPreview(tasks);
+        } catch (error) {
+          console.error("Error fetching data: ", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchData();
+    }, []);
+
+    if (loading) {
+      return <ActivityIndicator size="large" color="#0000ff" />;
+    }
+
+    return (
+      <View style={styles.screenContainer}>
+        <Text style={styles.welcomeText}>Welcome, {firstName}</Text>
+        <Animated.Image
+          source={require('../images/logo2.png')}
+          style={[styles.logo, { transform: [{ rotate: spin }] }]}
+        />
+        <FlatList
+          data={[
+            { key: 'Upcoming Deadlines', icon: 'calendar-clock', data: upcomingDeadlines },
+            { key: 'Recent Announcements', icon: 'message-alert', data: recentAnnouncements },
+            { key: 'Quick Access', icon: 'rocket-launch', data: quickAccess },
+            { key: 'Task List Preview', icon: 'clipboard-list', data: taskListPreview },
+          ]}
+          renderItem={({ item }) => (
+            <TouchableOpacity style={styles.widget}>
+              <Icon name={item.icon} type='material-community' size={40} color='#4b7bec' />
+              <Text style={styles.widgetText}>{item.key}</Text>
+              {item.data.length > 0 ? (
+                item.data.map((dataItem, index) => (
+                  <Text key={index} style={styles.widgetDataText}>{dataItem.title || dataItem.name}</Text>
+                ))
+              ) : (
+                <Text style={styles.widgetDataText}>No data available</Text>
+              )}
+            </TouchableOpacity>
+          )}
+          numColumns={2}
+          keyExtractor={(item) => item.key}
+        />
+      </View>
+    );
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.greeting}>
-        <Text style={styles.welcomeTxt}>Welcome back, {firstName}</Text>
-      </View>
-
-      <View style={styles.profileContainer}>
-        <TouchableOpacity style={styles.profile} onPress={GoToProfile}>
-          <Icon style={styles.icon} size={65} color='#fff' name='account' type='material-community' />
-          <Text style={styles.profileTxt}>Profile</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.profile} onPress={GoToAnnounce}>
-          <Icon style={styles.icon} size={65} color='#fff' name='message-alert-outline' type='material-community' />
-          <Text style={styles.profileTxt}>Announcements</Text>
-        </TouchableOpacity>
-
+      <Tab.Navigator
+        screenOptions={{
+          headerTitle: 'Student-Sphere',
+          headerShown: false, // Hide the header for each screen
+        }}
+      >
+        <Tab.Screen 
+          name="Home" 
+          component={HomeScreen} 
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Icon name='home' type='material-community' color={color} size={size} />
+            ),
+            title: 'Home',
+          }}
+        />
+        <Tab.Screen 
+          name="Profile" 
+          component={ProfileScreen} 
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Icon name='account' type='material-community' color={color} size={size} />
+            ),
+            title: 'Profile',
+          }}
+        />
+        <Tab.Screen 
+          name="Announcements" 
+          component={Announcements} 
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Icon name='message-alert-outline' type='material-community' color={color} size={size} />
+            ),
+            title: 'Announcements',
+          }}
+        />
         {role === 'admin' ? (
-          <TouchableOpacity style={styles.profile} onPress={() => navigation.navigate('Table Options')}>
-            <Icon style={styles.icon} size={65} color='#fff' name='table-multiple' type='material-community' />
-            <Text style={styles.profileTxt}>Tables</Text>
-          </TouchableOpacity>
+          <Tab.Screen 
+            name="Tables" 
+            component={TableOptions} 
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <Icon name='table-multiple' type='material-community' color={color} size={size} />
+              ),
+              title: 'Tables',
+            }}
+          />
         ) : (
           <>
-            <TouchableOpacity style={styles.profile} onPress={() => navigation.navigate('Units')}>
-              <Icon style={styles.icon} size={65} color='#fff' name='book-open-page-variant-outline' type='material-community' />
-              <Text style={styles.profileTxt}>Units</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.profile} onPress={() => navigation.navigate('Task Screen')}>
-              <Icon style={styles.icon} size={65} color='black' name='clock-time-eight' type='material-community' />
-              <Text style={styles.profileTxt}>Tasks</Text>
-            </TouchableOpacity>
+            <Tab.Screen 
+              name="Units" 
+              component={Units} 
+              options={{
+                tabBarIcon: ({ color, size }) => (
+                  <Icon name='book-open-page-variant-outline' type='material-community' color={color} size={size} />
+                ),
+                title: 'Units',
+              }}
+            />
+            <Tab.Screen 
+              name="Tasks" 
+              component={TaskScreen} 
+              options={{
+                tabBarIcon: ({ color, size }) => (
+                  <Icon name='clock-time-eight' type='material-community' color={color} size={size} />
+                ),
+                title: 'Tasks',
+              }}
+            />
           </>
         )}
-      </View>
-
-      <TouchableOpacity style={styles.logout} onPress={handleSignout}>
-        <Text style={styles.logoutTxt}>Logout</Text>
-      </TouchableOpacity>
+      </Tab.Navigator>
     </View>
   );
 };
@@ -100,60 +215,49 @@ const DashboardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f0f4f7',
+  },
+  screenContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f0f4f7',
-    paddingHorizontal: 20,
   },
-  greeting: {
+  welcomeText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    marginTop: 20,
+    color: '#2E86C1',
+  },
+  logo: {
+    width: 100,
+    height: 100,
     marginBottom: 20,
   },
-  profileContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    width: '100%',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  profile: {
-    width: '45%',
-    height: 150,
-    padding: 20,
-    backgroundColor: '#4b7bec',
-    borderRadius: 15,
-    alignItems: 'center',
-    marginVertical: 10,
-    justifyContent: 'space-between',
+  widget: {
+    width: 160,
+    height: 160,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 10,
+    margin: 10, // Adjusted margin to center the widgets
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  profileTxt: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    color: '#fff',
-  },
-  welcomeTxt: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#333',
-  },
-  logout: {
-    width: '80%',
-    padding: 15,
-    backgroundColor: '#fc5c65',
-    borderRadius: 10,
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
     alignItems: 'center',
-    marginTop: 20,
-    position: 'absolute',
-    bottom: 30,
+    justifyContent: 'center',
   },
-  logoutTxt: {
+  widgetText: {
+    fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  widgetDataText: {
     fontSize: 16,
-    color: '#fff',
+    textAlign: 'center',
   },
 });
 

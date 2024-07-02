@@ -131,4 +131,18 @@ export default StyleSheet.create({
         width: '90%',
         height: 40,
     },
+    // New styles for the deadline selector
+    deadlineSelector: {
+        width: '100%',
+        padding: 8,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        textAlign: 'center',
+    },
+    datePicker: {
+        width: '100%',
+        marginTop: 16,
+        marginBottom: 16,
+    },
 });

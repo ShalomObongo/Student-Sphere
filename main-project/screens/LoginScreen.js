@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { KeyboardAvoidingView, View, Text, TextInput, Alert, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { KeyboardAvoidingView, View, Text, TextInput, Alert, TouchableOpacity, StyleSheet, ActivityIndicator, Animated } from 'react-native';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
@@ -11,6 +11,22 @@ const LoginScreen = () => {
   const navigation = useNavigation();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const spinValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(spinValue, {
+        toValue: 1,
+        duration: 10000, // 10 seconds for a full rotation
+        useNativeDriver: true,
+      })
+    ).start();
+  }, [spinValue]);
+
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
 
   const handleLogin = () => {
     setIsLoading(true);
@@ -56,6 +72,10 @@ const LoginScreen = () => {
       <View style={styles.innerContainer}>
         <Text style={styles.title}>Log in to your account</Text>
         <Text style={styles.subtitle}>Welcome back! Please enter your details</Text>
+        <Animated.Image
+          source={require('../images/logo2.png')}
+          style={[styles.logo, { transform: [{ rotate: spin }] }]}
+        />
         <View style={styles.inputBox}>
           <TextInput
             style={styles.input}
@@ -74,17 +94,19 @@ const LoginScreen = () => {
             value={password}
             onChangeText={setPassword}
           />
-          <MaterialCommunityIcons 
-            name={showPassword ? 'eye-off' : 'eye'} 
-            size={24} 
-            color="#aaa"
-            style={styles.icon} 
-            onPress={toggleShowPassword} 
-          /> 
+          <TouchableOpacity onPress={toggleShowPassword} style={styles.iconContainer}>
+            <MaterialCommunityIcons 
+              name={showPassword ? 'eye-off' : 'eye'} 
+              size={24} 
+              color="#aaa"
+            />
+          </TouchableOpacity>
         </View>
         <Text style={styles.signupText}>Don't have an account?
           <Text style={styles.signupLink} onPress={gotoRegister}> Sign up</Text>
-          </Text>
+        </Text>
+      </View>
+      <View style={styles.buttonContainer}>
         <TouchableOpacity 
           style={styles.loginBtn} 
           onPress={handleLogin}
@@ -126,7 +148,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#333',
+    color: '#2E86C1',
     textAlign: 'center',
   },
   subtitle: {
@@ -151,24 +173,36 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
   },
-  icon: {
-    paddingHorizontal: 10,
+  iconContainer: {
+    position: 'absolute',
+    right: 10,
+  },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    width: '115%',
+    backgroundColor: '#2E86C1',
+    paddingVertical: 20,
+    alignItems: 'center',
+    borderRadius: 30,
   },
   loginBtn: {
-    width: '100%',
-    backgroundColor: '#007bff',
-    borderRadius: 10,
+    width: '75%',
     paddingVertical: 15,
+    backgroundColor: '#000',
+    borderRadius: 10,
     alignItems: 'center',
-    marginTop: 20,
+    marginBottom: 20,
+    elevation: 3,
   },
   resetBtn: {
-    width: '100%',
+    width: '75%',
+    paddingVertical: 15,
     backgroundColor: '#dc3545',
     borderRadius: 10,
-    paddingVertical: 15,
     alignItems: 'center',
     marginTop: 10,
+    elevation: 3,
   },
   btnText: {
     color: '#fff',
@@ -180,6 +214,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#555',
     textAlign: 'center',
+    marginBottom: 140,
   },
   signupLink: {
     color: '#007bff',
@@ -194,6 +229,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  logo: {
+    width: 200,
+    height: 200,
+    marginBottom: 20,
+    marginTop: 20,
   },
 });
 

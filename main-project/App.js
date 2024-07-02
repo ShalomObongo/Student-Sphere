@@ -79,7 +79,7 @@ export default function App() {
         <NavigationContainer>
             <Stack.Navigator initialRouteName="Home">
                 <Stack.Screen
-                    name="Home"
+                    name="Welcome"
                     component={HomeScreen}
                     options={{ title: 'Welcome' }}
 a                 />
@@ -96,7 +96,7 @@ a                 />
                 <Stack.Screen
                     name="Dashboard"
                     component={DashboardScreen}
-                    options={{ title: 'Dashboard' }}
+                    options={{ title: 'Student-Sphere' }}
                 />
                 <Stack.Screen
                     name="Profile screen"
