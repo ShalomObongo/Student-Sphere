@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TouchableOpacity, KeyboardAvoidingView, StyleSheet, Text, TextInput, View, Alert } from 'react-native';
+import { TouchableOpacity, KeyboardAvoidingView, StyleSheet, Text, TextInput, View, Alert, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { auth } from '../firebase';
 import { reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
@@ -11,6 +11,7 @@ const ResetPwd = () => {
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   // Function to toggle the visibility of the password
   const toggleShowPassword = () => {
@@ -25,6 +26,7 @@ const ResetPwd = () => {
       return;
     }
 
+    setIsLoading(true);
     // Get the current user and their credentials
     const user = auth.currentUser;
     const credential = EmailAuthProvider.credential(user.email, oldPassword);
@@ -35,13 +37,16 @@ const ResetPwd = () => {
         // Update the password with the new password
         updatePassword(user, newPassword)
           .then(() => {
+            setIsLoading(false);
             Alert.alert('Success', 'Password changed successfully');
           })
           .catch((error) => {
+            setIsLoading(false);
             Alert.alert('Error', error.message);
           });
       })
       .catch((error) => {
+        setIsLoading(false);
         Alert.alert('Error', error.message);
       });
   };
@@ -106,10 +111,23 @@ const ResetPwd = () => {
         </View>
 
         {/* Button to trigger password reset */}
-        <TouchableOpacity style={styles.resetBtn} onPress={handleResetPassword}>
-          <Text style={styles.resetbtnText}>Reset</Text>
+        <TouchableOpacity 
+          style={styles.resetBtn} 
+          onPress={handleResetPassword}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.resetbtnText}>Reset</Text>
+          )}
         </TouchableOpacity>
       </View>
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#000" />
+        </View>
+      )}
     </KeyboardAvoidingView>
   );
 };
@@ -162,6 +180,16 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginLeft: 10,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 });
 

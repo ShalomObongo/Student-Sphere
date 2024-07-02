@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { auth } from '../firebase';
 import { getFirestore, doc, getDoc } from "firebase/firestore";
@@ -13,9 +13,11 @@ const ProfileScreen = () => {
     const [role, setRole] = useState('');
     const [email, setEmail] = useState('');
     const [phoneNumber, setNumber] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const fetchUserDetails = async () => {
+            setIsLoading(true);
             const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
             if (userDoc.exists()) {
                 setFirstName(userDoc.data().firstName);
@@ -25,6 +27,7 @@ const ProfileScreen = () => {
             } else {
                 console.log("No such document!");
             }
+            setIsLoading(false);
         };
 
         fetchUserDetails();
@@ -61,18 +64,26 @@ const ProfileScreen = () => {
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <ScrollView style={styles.container}>
-                <View style={styles.profile}>
-                    <Text>Hello, {firstName}</Text>
-                    <Text style={styles.profileSecond}>Email: {email}</Text>
-                    <Text style={styles.profileSecond}>Role: {role}</Text>
-                    <Text style={styles.profileSecond}>Number: {phoneNumber}</Text>
-                </View>
-                <View style={styles.profileNaviagtion}>
-                    <TouchableOpacity style={styles.taskBtn} onPress={gotoTasks}><Text style={styles.taskTxt}>View tasks</Text></TouchableOpacity>
-                    <TouchableOpacity style={styles.unitBtn} onPress={gotoUnits}><Text style={styles.unitTxt}>View units</Text></TouchableOpacity>
-                    <TouchableOpacity style={styles.editBtn} onPress={gotoEdit}><Text style={styles.editTxt}>Edit Profile</Text></TouchableOpacity>
-                    <TouchableOpacity style={styles.logoutBtn} onPress={handleSignout}><Text style={styles.logoutTxt}>Logout</Text></TouchableOpacity>
-                </View>
+                {isLoading ? (
+                    <View style={styles.loadingOverlay}>
+                        <ActivityIndicator size="large" color="#000" />
+                    </View>
+                ) : (
+                    <>
+                        <View style={styles.profile}>
+                            <Text>Hello, {firstName}</Text>
+                            <Text style={styles.profileSecond}>Email: {email}</Text>
+                            <Text style={styles.profileSecond}>Role: {role}</Text>
+                            <Text style={styles.profileSecond}>Number: {phoneNumber}</Text>
+                        </View>
+                        <View style={styles.profileNavigation}>
+                            <TouchableOpacity style={styles.taskBtn} onPress={gotoTasks}><Text style={styles.taskTxt}>View tasks</Text></TouchableOpacity>
+                            <TouchableOpacity style={styles.unitBtn} onPress={gotoUnits}><Text style={styles.unitTxt}>View units</Text></TouchableOpacity>
+                            <TouchableOpacity style={styles.editBtn} onPress={gotoEdit}><Text style={styles.editTxt}>Edit Profile</Text></TouchableOpacity>
+                            <TouchableOpacity style={styles.logoutBtn} onPress={handleSignout}><Text style={styles.logoutTxt}>Logout</Text></TouchableOpacity>
+                        </View>
+                    </>
+                )}
             </ScrollView>
         </SafeAreaView>
     );
@@ -163,10 +174,19 @@ const styles = StyleSheet.create({
         color: '#fff',
       },
       logoutTxt: {
-    
         fontSize: 20,
         color: '#fff',
       },
+      loadingOverlay: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
 });
 
 export default ProfileScreen;
