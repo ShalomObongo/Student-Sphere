@@ -107,3 +107,4 @@ Student-Sphere/
 ├── package-lock.json                           # Captures exact versions of Expo dependencies
 └── README.md                                   # Holds the project's documentation 
 ```
+
