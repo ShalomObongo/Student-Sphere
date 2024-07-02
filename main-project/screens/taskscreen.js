@@ -1,23 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Modal, Button, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Modal, Button, ActivityIndicator, Platform } from 'react-native';
 import { Icon } from 'react-native-elements';
 import * as Notifications from 'expo-notifications';
 import { db, auth } from '../firebase';
 import { collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Slider from '@react-native-community/slider';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import styles from '../styles/taskstyles.js'; // Import the styles
 
 const TaskScreen = () => {
     const [tasks, setTasks] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
-    const [newTask, setNewTask] = useState({ title: '', description: '', category: '', deadline: '', priority: '' });
+    const [newTask, setNewTask] = useState({ title: '', description: '', category: '', deadline: null, priority: '' });
     const [open, setOpen] = useState(false);
     const [priority, setPriority] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [editModalVisible, setEditModalVisible] = useState(false);
-    const [editTask, setEditTask] = useState({ id: '', title: '', description: '', category: '', deadline: '', priority: '' });
+    const [editTask, setEditTask] = useState({ id: '', title: '', description: '', category: '', deadline: null, priority: '' });
     const [sortOrder, setSortOrder] = useState({ deadline: 'asc', priority: 'asc' });
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [showEditDatePicker, setShowEditDatePicker] = useState(false);
+
+    const handleDateChange = (event, selectedDate) => {
+        const currentDate = selectedDate || new Date();
+        setShowDatePicker(Platform.OS === 'ios');
+        setNewTask({ ...newTask, deadline: currentDate.toISOString() });
+    };
+
+    const handleEditDateChange = (event, selectedDate) => {
+        const currentDate = selectedDate || new Date();
+        setShowEditDatePicker(Platform.OS === 'ios');
+        setEditTask({ ...editTask, deadline: currentDate.toISOString() });
+    };
 
     const addTask = async () => {
         setIsLoading(true);
@@ -29,7 +44,7 @@ const TaskScreen = () => {
             });
             setTasks([...tasks, { ...taskWithId, docId: docRef.id }]);
             setModalVisible(false);
-            setNewTask({ title: '', description: '', category: '', deadline: '', priority: '' });
+            setNewTask({ title: '', description: '', category: '', deadline: null, priority: '' });
             setPriority(null);
         } catch (error) {
             console.error("Error adding task: ", error);
@@ -265,12 +280,19 @@ const TaskScreen = () => {
                         onChangeText={(text) => setNewTask({ ...newTask, category: text })}
                         style={styles.input}
                     />
-                    <TextInput
-                        placeholder="Deadline (YYYY-MM-DD)"
-                        value={newTask.deadline}
-                        onChangeText={(text) => setNewTask({ ...newTask, deadline: text })}
-                        style={styles.input}
-                    />
+                    <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                        <Text style={styles.input}>
+                            {newTask.deadline ? new Date(newTask.deadline).toLocaleString() : 'Select Deadline'}
+                        </Text>
+                    </TouchableOpacity>
+                    {showDatePicker && (
+                        <DateTimePicker
+                            value={newTask.deadline ? new Date(newTask.deadline) : new Date()}
+                            mode="datetime"
+                            display="default"
+                            onChange={handleDateChange}
+                        />
+                    )}
                     <DropDownPicker
                         open={open}
                         value={priority}
@@ -312,12 +334,19 @@ const TaskScreen = () => {
                         onChangeText={(text) => setEditTask({ ...editTask, category: text })}
                         style={styles.input}
                     />
-                    <TextInput
-                        placeholder="Deadline (YYYY-MM-DD)"
-                        value={editTask.deadline}
-                        onChangeText={(text) => setEditTask({ ...editTask, deadline: text })}
-                        style={styles.input}
-                    />
+                    <TouchableOpacity onPress={() => setShowEditDatePicker(true)}>
+                        <Text style={styles.input}>
+                            {editTask.deadline ? new Date(editTask.deadline).toLocaleString() : 'Select Deadline'}
+                        </Text>
+                    </TouchableOpacity>
+                    {showEditDatePicker && (
+                        <DateTimePicker
+                            value={editTask.deadline ? new Date(editTask.deadline) : new Date()}
+                            mode="datetime"
+                            display="default"
+                            onChange={handleEditDateChange}
+                        />
+                    )}
                     <DropDownPicker
                         open={open}
                         value={editTask.priority}
