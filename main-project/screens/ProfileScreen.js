@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, View, Text, TouchableOpacity, Alert, ActivityIndicator, ImageBackground } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { auth } from '../firebase';
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { signOut } from 'firebase/auth';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const db = getFirestore();
 
@@ -17,36 +19,44 @@ const ProfileScreen = () => {
 
     useEffect(() => {
         const fetchUserDetails = async () => {
-            setIsLoading(true);
-            const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
-            if (userDoc.exists()) {
-                setFirstName(userDoc.data().firstName);
-                setEmail(userDoc.data().email);
-                setRole(userDoc.data().role);
-                setNumber(userDoc.data().phoneNumber);
+            if (auth.currentUser) {
+                setIsLoading(true);
+                const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+                if (userDoc.exists()) {
+                    setFirstName(userDoc.data().firstName);
+                    setEmail(userDoc.data().email);
+                    setRole(userDoc.data().role);
+                    setNumber(userDoc.data().phoneNumber);
+                } else {
+                    console.log("No such document!");
+                }
+                setIsLoading(false);
             } else {
-                console.log("No such document!");
+                console.log("No user is currently logged in.");
             }
-            setIsLoading(false);
         };
 
         fetchUserDetails();
     }, []);
 
     const handleSignout = () => {
-        signOut(auth)
-            .then(() => {
-                Alert.alert('Logout Successful');
-                console.log('Successful logout');
-                navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'Home' }],
+        if (auth.currentUser) {
+            signOut(auth)
+                .then(() => {
+                    Alert.alert('Logout Successful');
+                    console.log('Successful logout');
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Welcome' }],
+                    });
+                })
+                .catch((error) => {
+                    Alert.alert('Logout Failed', error.message);
+                    console.error('Sign out error', error);
                 });
-            })
-            .catch((error) => {
-                Alert.alert('Logout Failed', error.message);
-                console.error('Sign out error', error);
-            });
+        } else {
+            Alert.alert('No user is currently logged in.');
+        }
     };
 
     const gotoEdit = () => {
@@ -58,29 +68,54 @@ const ProfileScreen = () => {
     };
 
     const gotoUnits = () => {
-        navigation.navigate('Unit Screen');
+        navigation.navigate('Units');
     };
+
+    const ProfileButton = ({ icon, title, onPress, color }) => (
+        <TouchableOpacity style={[styles.profileButton, { backgroundColor: color }]} onPress={onPress}>
+            <Icon name={icon} size={24} color="#fff" />
+            <Text style={styles.buttonText}>{title}</Text>
+        </TouchableOpacity>
+    );
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <ScrollView style={styles.container}>
                 {isLoading ? (
                     <View style={styles.loadingOverlay}>
-                        <ActivityIndicator size="large" color="#000" />
+                        <ActivityIndicator size="large" color="#fff" />
                     </View>
                 ) : (
                     <>
-                        <View style={styles.profile}>
-                            <Text>Hello, {firstName}</Text>
-                            <Text style={styles.profileSecond}>Email: {email}</Text>
-                            <Text style={styles.profileSecond}>Role: {role}</Text>
-                            <Text style={styles.profileSecond}>Number: {phoneNumber}</Text>
+                        <ImageBackground
+                            // source={require('../assets/profile-bg.jpg')}
+                            style={styles.headerBackground}
+                        >
+                            <LinearGradient
+                                colors={['transparent', 'rgba(0,0,0,0.8)']}
+                                style={styles.gradient}
+                            >
+                                <View style={styles.headerContent}>
+                                    <Text style={styles.welcomeTxt}>Hello, {firstName}</Text>
+                                    <Text style={styles.roleTxt}>{role}</Text>
+                                </View>
+                            </LinearGradient>
+                        </ImageBackground>
+                        <View style={styles.infoContainer}>
+                            <View style={styles.infoItem}>
+                                <Icon name="email" size={24} color="#007BFF" />
+                                <Text style={styles.infoText}>{email}</Text>
+                            </View>
+                            <View style={styles.infoItem}>
+                                <Icon name="phone" size={24} color="#28A745" />
+                                <Text style={styles.infoText}>{phoneNumber}</Text>
+                            </View>
                         </View>
                         <View style={styles.profileNavigation}>
-                            <TouchableOpacity style={styles.taskBtn} onPress={gotoTasks}><Text style={styles.taskTxt}>View tasks</Text></TouchableOpacity>
-                            <TouchableOpacity style={styles.unitBtn} onPress={gotoUnits}><Text style={styles.unitTxt}>View units</Text></TouchableOpacity>
-                            <TouchableOpacity style={styles.editBtn} onPress={gotoEdit}><Text style={styles.editTxt}>Edit Profile</Text></TouchableOpacity>
-                            <TouchableOpacity style={styles.logoutBtn} onPress={handleSignout}><Text style={styles.logoutTxt}>Logout</Text></TouchableOpacity>
+                            <ProfileButton icon="assignment" title="View Tasks" onPress={gotoTasks} color="#007BFF" />
+                            <ProfileButton icon="school" title="View Units" onPress={gotoUnits} color="#28A745" />
+                            <ProfileButton icon="edit" title="Edit Profile" onPress={gotoEdit} color="#FFC107" />
+                            <ProfileButton icon="exit-to-app" title="Logout" onPress={handleSignout} color="#DC3545" />
                         </View>
                     </>
                 )}
@@ -91,98 +126,72 @@ const ProfileScreen = () => {
 
 const styles = StyleSheet.create({
     container: {
-        paddingVertical: 24,
-        backgroundColor: '#f5f5f5',
-      },
-      profile: {
-        padding: 24,
-        alignItems: 'center',
-        justifyContent: 'center',
+        flex: 1,
+        backgroundColor: '#f0f0f0',
+    },
+    headerBackground: {
+        height: 200,
+        justifyContent: 'flex-end',
+    },
+    gradient: {
+        flex: 1,
+        justifyContent: 'flex-end',
+    },
+    headerContent: {
+        padding: 20,
+    },
+    welcomeTxt: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#fff',
+        textShadowColor: 'rgba(0, 0, 0, 0.75)',
+        textShadowOffset: { width: -1, height: 1 },
+        textShadowRadius: 10,
+    },
+    roleTxt: {
+        fontSize: 18,
+        color: '#fff',
+        marginTop: 5,
+        textShadowColor: 'rgba(0, 0, 0, 0.75)',
+        textShadowOffset: { width: -1, height: 1 },
+        textShadowRadius: 10,
+    },
+    infoContainer: {
         backgroundColor: '#fff',
         borderRadius: 10,
-        marginHorizontal: 20,
-        elevation: 3,
-        marginBottom: 20,
-      },
-      welcomeTxt: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#414d63',
-        textAlign: 'center',
+        margin: 20,
+        padding: 20,
+        elevation: 5,
+    },
+    infoItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
         marginBottom: 10,
-      },
-      profileSecond: {
-        marginTop: 5,
+    },
+    infoText: {
+        marginLeft: 10,
         fontSize: 16,
-        color: '#757575',
-        textAlign: 'center',
-      },
-      profileNavigation: {
-        padding: 24,
+        color: '#333',
+    },
+    profileNavigation: {
+        padding: 20,
+    },
+    profileButton: {
+        flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-      },
-      taskBtn: {
-        backgroundColor: '#4CAF50',
-        width: '100%',
-        borderRadius: 10,
-        marginTop: 20,
-        height: 50,
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 2,
-      },
-      unitBtn: {
-        backgroundColor: '#2196F3',
-        width: '100%',
-        borderRadius: 10,
-        marginTop: 20,
-        height: 50,
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 2,
-      },
-      editBtn: {
-        backgroundColor: '#FFC107',
-        width: '100%',
-        borderRadius: 10,
-        marginTop: 20,
-        height: 50,
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 2,
-      },
-      logoutBtn: {
-        width: '100%',
         padding: 15,
-        backgroundColor: '#E53935',
         borderRadius: 10,
-        alignItems: 'center',
-        marginTop: 30,
-        elevation: 2,
-      },
-      taskTxt: {
-        fontSize: 20,
+        marginBottom: 15,
+        elevation: 3,
+    },
+    buttonText: {
+        marginLeft: 15,
+        fontSize: 18,
         color: '#fff',
-      },
-      unitTxt: {
-        fontSize: 20,
-        color: '#fff',
-      },
-      editTxt: {
-        fontSize: 20,
-        color: '#fff',
-      },
-      logoutTxt: {
-        fontSize: 20,
-        color: '#fff',
-      },
-      loadingOverlay: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
+        fontWeight: '600',
+    },
+    loadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.5)',

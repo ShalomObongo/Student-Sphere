@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Modal, Button, ActivityIndicator, Platform } from 'react-native';
+import { Button, View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Modal, ActivityIndicator, Platform } from 'react-native';
 import { Icon } from 'react-native-elements';
 import * as Notifications from 'expo-notifications';
 import { db, auth } from '../firebase';
@@ -7,7 +7,7 @@ import { collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc } 
 import DropDownPicker from 'react-native-dropdown-picker';
 import Slider from '@react-native-community/slider';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import styles from '../styles/taskstyles.js'; // Import the styles
+import { LinearGradient } from 'expo-linear-gradient';
 
 const TaskScreen = () => {
     const [tasks, setTasks] = useState([]);
@@ -208,26 +208,35 @@ const TaskScreen = () => {
     };
 
     return (
-        <View style={styles.container}>
+        <LinearGradient
+            colors={['#4c669f', '#3b5998', '#192f6a']}
+            style={styles.container}
+        >
             {isLoading && (
                 <View style={styles.loadingOverlay}>
-                    <ActivityIndicator size="large" color="#000" />
+                    <ActivityIndicator size="large" color="#fff" />
                 </View>
             )}
-            <Text style={styles.title}>Tasks</Text>
+
+            <View style={styles.header}>
+                <Text style={styles.headerTitle}>My Tasks</Text>
+            </View>
 
             <View style={styles.sortButtonsContainer}>
                 <TouchableOpacity style={styles.sortButton} onPress={sortTasksByDeadline}>
+                    <Icon name="sort" type="material" color="#fff" size={18} />
                     <Text style={styles.sortButtonText}>
-                        Sort by Deadline {sortOrder.deadline === 'asc' ? '↑' : '↓'}
+                        Deadline {sortOrder.deadline === 'asc' ? '↑' : '↓'}
                     </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.sortButton} onPress={sortTasksByPriority}>
+                    <Icon name="flag" type="material" color="#fff" size={18} />
                     <Text style={styles.sortButtonText}>
-                        Sort by Priority {sortOrder.priority === 'asc' ? '↑' : '↓'}
+                        Priority {sortOrder.priority === 'asc' ? '↑' : '↓'}
                     </Text>
                 </TouchableOpacity>
             </View>
+
             <FlatList
                 data={tasks}
                 renderItem={({ item }) => (
@@ -235,7 +244,7 @@ const TaskScreen = () => {
                         <View style={styles.taskContent}>
                             <Text style={styles.taskTitle}>{item.title}</Text>
                             <Text style={styles.taskDescription}>{item.description}</Text>
-                            <Text>Progress: {item.progress}%</Text>
+                            <Text style={styles.taskProgress}>Progress: {item.progress}%</Text>
                             <Slider
                                 style={styles.slider}
                                 minimumValue={0}
@@ -243,17 +252,20 @@ const TaskScreen = () => {
                                 step={1}
                                 value={item.progress}
                                 onValueChange={(value) => updateTaskProgress(item.id, value)}
+                                minimumTrackTintColor="#4c669f"
+                                maximumTrackTintColor="#d3d3d3"
+                                thumbTintColor="#3b5998"
                             />
                         </View>
                         <View style={styles.buttonContainer}>
-                            <TouchableOpacity style={styles.completeButton} onPress={() => toggleTaskStatus(item.id)}>
-                                <Text style={styles.buttonText}>{item.status === 'complete' ? 'Incomplete' : 'Complete'}</Text>
+                            <TouchableOpacity style={styles.actionButton} onPress={() => toggleTaskStatus(item.id)}>
+                                <Icon name={item.status === 'complete' ? 'undo' : 'check'} type="material" color="#fff" size={20} />
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.deleteButton} onPress={() => deleteTask(item.id)}>
-                                <Text style={styles.buttonText}>Delete</Text>
+                            <TouchableOpacity style={styles.actionButton} onPress={() => deleteTask(item.id)}>
+                                <Icon name="delete" type="material" color="#fff" size={20} />
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.editButton} onPress={() => openEditModal(item)}>
-                                <Text style={styles.buttonText}>Edit</Text>
+                            <TouchableOpacity style={styles.actionButton} onPress={() => openEditModal(item)}>
+                                <Icon name="edit" type="material" color="#fff" size={20} />
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -261,120 +273,342 @@ const TaskScreen = () => {
                 keyExtractor={item => item.id}
                 contentContainerStyle={styles.taskList}
             />
+
             <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
-                <Icon name="plus" type="material-community" color="white" />
-                <Text style={styles.addButtonText}>Add Task</Text>
+                <Icon name="add" type="material" color="white" size={30} />
             </TouchableOpacity>
 
-            <Modal visible={modalVisible} animationType="slide">
-                <View style={styles.modalContainer}>
-                    <TextInput
-                        placeholder="Title"
-                        value={newTask.title}
-                        onChangeText={(text) => setNewTask({ ...newTask, title: text })}
-                        style={styles.input}
-                    />
-                    <TextInput
-                        placeholder="Description"
-                        value={newTask.description}
-                        onChangeText={(text) => setNewTask({ ...newTask, description: text })}
-                        style={styles.input}
-                    />
-                    <TextInput
-                        placeholder="Category"
-                        value={newTask.category}
-                        onChangeText={(text) => setNewTask({ ...newTask, category: text })}
-                        style={styles.input}
-                    />
-                    <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-                        <Text style={styles.input}>
-                            {newTask.deadline ? new Date(newTask.deadline).toLocaleString() : 'Select Deadline'}
-                        </Text>
-                    </TouchableOpacity>
-                    {showDatePicker && (
-                        <DateTimePicker
-                            value={newTask.deadline ? new Date(newTask.deadline) : new Date()}
-                            mode="datetime"
-                            display="default"
-                            onChange={handleDateChange}
+            <Modal visible={modalVisible} animationType="slide" transparent={true}>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContainer}>
+                        <Text style={styles.modalTitle}>Add New Task</Text>
+                        <TextInput
+                            placeholder="Title"
+                            value={newTask.title}
+                            onChangeText={(text) => setNewTask({ ...newTask, title: text })}
+                            style={styles.input}
+                            placeholderTextColor="#999"
                         />
-                    )}
-                    <DropDownPicker
-                        open={open}
-                        value={priority}
-                        items={[
-                            { label: '1', value: '1' },
-                            { label: '2', value: '2' },
-                            { label: '3', value: '3' },
-                            { label: '4', value: '4' },
-                            { label: '5', value: '5' },
-                        ]}
-                        setOpen={setOpen}
-                        setValue={setPriority}
-                        style={styles.input}
-                        placeholder="Priority (1 - Low, 5 - High)"
-                        dropDownContainerStyle={styles.dropdownContainerStyle}
-                    />
-                    <Button title="Add Task" onPress={addTask} />
-                    <Button title="Cancel" onPress={() => setModalVisible(false)} />
+                        <TextInput
+                            placeholder="Description"
+                            value={newTask.description}
+                            onChangeText={(text) => setNewTask({ ...newTask, description: text })}
+                            style={[styles.input, styles.textArea]}
+                            multiline={true}
+                            numberOfLines={4}
+                            placeholderTextColor="#999"
+                        />
+                        <TextInput
+                            placeholder="Category"
+                            value={newTask.category}
+                            onChangeText={(text) => setNewTask({ ...newTask, category: text })}
+                            style={styles.input}
+                            placeholderTextColor="#999"
+                        />
+                        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateSelector}>
+                            <Text style={styles.dateSelectorText}>
+                                {newTask.deadline ? new Date(newTask.deadline).toLocaleString() : 'Select Deadline'}
+                            </Text>
+                        </TouchableOpacity>
+                        {showDatePicker && (
+                            <DateTimePicker
+                                value={newTask.deadline ? new Date(newTask.deadline) : new Date()}
+                                mode="datetime"
+                                display="default"
+                                onChange={handleDateChange}
+                                style={styles.datePicker}
+                            />
+                        )}
+                        <DropDownPicker
+                            open={open}
+                            value={priority}
+                            items={[
+                                { label: '1 - Low', value: '1' },
+                                { label: '2', value: '2' },
+                                { label: '3', value: '3' },
+                                { label: '4', value: '4' },
+                                { label: '5 - High', value: '5' },
+                            ]}
+                            setOpen={setOpen}
+                            setValue={setPriority}
+                            style={styles.dropdownStyle}
+                            dropDownContainerStyle={styles.dropdownContainerStyle}
+                            placeholder="Select Priority"
+                            placeholderStyle={styles.dropdownPlaceholder}
+                        />
+                        <View style={styles.modalButtonContainer}>
+                            <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setModalVisible(false)}>
+                                <Text style={styles.modalButtonText}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.modalButton, styles.addButton]} onPress={addTask}>
+                                <Text style={styles.modalButtonText}>Add Task</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
                 </View>
             </Modal>
 
-            <Modal visible={editModalVisible} animationType="slide">
-                <View style={styles.modalContainer}>
-                    <TextInput
-                        placeholder="Title"
-                        value={editTask.title}
-                        onChangeText={(text) => setEditTask({ ...editTask, title: text })}
-                        style={styles.input}
-                    />
-                    <TextInput
-                        placeholder="Description"
-                        value={editTask.description}
-                        onChangeText={(text) => setEditTask({ ...editTask, description: text })}
-                        style={styles.input}
-                    />
-                    <TextInput
-                        placeholder="Category"
-                        value={editTask.category}
-                        onChangeText={(text) => setEditTask({ ...editTask, category: text })}
-                        style={styles.input}
-                    />
-                    <TouchableOpacity onPress={() => setShowEditDatePicker(true)}>
-                        <Text style={styles.input}>
-                            {editTask.deadline ? new Date(editTask.deadline).toLocaleString() : 'Select Deadline'}
-                        </Text>
-                    </TouchableOpacity>
-                    {showEditDatePicker && (
-                        <DateTimePicker
-                            value={editTask.deadline ? new Date(editTask.deadline) : new Date()}
-                            mode="datetime"
-                            display="default"
-                            onChange={handleEditDateChange}
+            <Modal visible={editModalVisible} animationType="slide" transparent={true}>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContainer}>
+                        <Text style={styles.modalTitle}>Edit Task</Text>
+                        <TextInput
+                            placeholder="Title"
+                            value={editTask.title}
+                            onChangeText={(text) => setEditTask({ ...editTask, title: text })}
+                            style={styles.input}
+                            placeholderTextColor="#999"
                         />
-                    )}
-                    <DropDownPicker
-                        open={open}
-                        value={editTask.priority}
-                        items={[
-                            { label: '1', value: '1' },
-                            { label: '2', value: '2' },
-                            { label: '3', value: '3' },
-                            { label: '4', value: '4' },
-                            { label: '5', value: '5' },
-                        ]}
-                        setOpen={setOpen}
-                        setValue={(value) => setEditTask({ ...editTask, priority: value })}
-                        style={styles.input}
-                        placeholder="Priority (1 - Low, 5 - High)"
-                        dropDownContainerStyle={styles.dropdownContainerStyle}
-                    />
-                    <Button title="Update Task" onPress={updateTask} />
-                    <Button title="Cancel" onPress={() => setEditModalVisible(false)} />
+                        <TextInput
+                            placeholder="Description"
+                            value={editTask.description}
+                            onChangeText={(text) => setEditTask({ ...editTask, description: text })}
+                            style={[styles.input, styles.textArea]}
+                            multiline={true}
+                            numberOfLines={4}
+                            placeholderTextColor="#999"
+                        />
+                        <TextInput
+                            placeholder="Category"
+                            value={editTask.category}
+                            onChangeText={(text) => setEditTask({ ...editTask, category: text })}
+                            style={styles.input}
+                            placeholderTextColor="#999"
+                        />
+                        <TouchableOpacity onPress={() => setShowEditDatePicker(true)} style={styles.dateSelector}>
+                            <Text style={styles.dateSelectorText}>
+                                {editTask.deadline ? new Date(editTask.deadline).toLocaleString() : 'Select Deadline'}
+                            </Text>
+                        </TouchableOpacity>
+                        {showEditDatePicker && (
+                            <DateTimePicker
+                                value={editTask.deadline ? new Date(editTask.deadline) : new Date()}
+                                mode="datetime"
+                                display="default"
+                                onChange={handleEditDateChange}
+                                style={styles.datePicker}
+                            />
+                        )}
+                        <DropDownPicker
+                            open={open}
+                            value={editTask.priority}
+                            items={[
+                                { label: '1 - Low', value: '1' },
+                                { label: '2', value: '2' },
+                                { label: '3', value: '3' },
+                                { label: '4', value: '4' },
+                                { label: '5 - High', value: '5' },
+                            ]}
+                            setOpen={setOpen}
+                            setValue={(value) => setEditTask({ ...editTask, priority: value })}
+                            style={styles.dropdownStyle}
+                            dropDownContainerStyle={styles.dropdownContainerStyle}
+                            placeholder="Select Priority"
+                            placeholderStyle={styles.dropdownPlaceholder}
+                        />
+                        <View style={styles.modalButtonContainer}>
+                            <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setEditModalVisible(false)}>
+                                <Text style={styles.modalButtonText}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.modalButton, styles.addButton]} onPress={updateTask}>
+                                <Text style={styles.modalButtonText}>Update Task</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
                 </View>
             </Modal>
-        </View>
+        </LinearGradient>
     );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        padding: 20,
+    },
+    header: {
+        marginBottom: 20,
+    },
+    headerTitle: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+    loadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    sortButtonsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 15,
+    },
+    sortButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 20,
+    },
+    sortButtonText: {
+        color: '#fff',
+        marginLeft: 5,
+    },
+    taskList: {
+        paddingBottom: 100,
+    },
+    taskItem: {
+        backgroundColor: 'rgba(255,255,255,0.9)',
+        borderRadius: 10,
+        padding: 15,
+        marginBottom: 15,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+    },
+    taskItemComplete: {
+        opacity: 0.7,
+    },
+    taskContent: {
+        marginBottom: 10,
+    },
+    taskTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 5,
+    },
+    taskDescription: {
+        fontSize: 14,
+        color: '#666',
+        marginBottom: 10,
+    },
+    taskProgress: {
+        fontSize: 12,
+        color: '#888',
+        marginBottom: 5,
+    },
+    slider: {
+        width: '100%',
+        height: 40,
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+    },
+    actionButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#3b5998',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 10,
+    },
+    addButton: {
+        position: 'absolute',
+        right: 30,
+        bottom: 30,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: '#4c669f',
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContainer: {
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        padding: 20,
+        width: '90%',
+        maxHeight: '80%',
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#4c669f',
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    input: {
+        height: 50,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 10,
+        marginBottom: 15,
+        paddingHorizontal: 15,
+        fontSize: 16,
+        color: '#333',
+    },
+    textArea: {
+        height: 100,
+        textAlignVertical: 'top',
+        paddingTop: 15,
+    },
+    dateSelector: {
+        height: 50,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 10,
+        marginBottom: 15,
+        paddingHorizontal: 15,
+        justifyContent: 'center',
+    },
+    dateSelectorText: {
+        fontSize: 16,
+        color: '#333',
+    },
+    dropdownStyle: {
+        borderColor: '#ddd',
+        borderRadius: 10,
+        marginBottom: 15,
+    },
+    dropdownContainerStyle: {
+        borderColor: '#ddd',
+        borderRadius: 10,
+    },
+    dropdownPlaceholder: {
+        color: '#999',
+    },
+    modalButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 20,
+    },
+    modalButton: {
+        flex: 1,
+        height: 50,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    cancelButton: {
+        backgroundColor: '#ddd',
+    },
+    addButton: {
+        backgroundColor: '#4c669f',
+    },
+    modalButtonText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+});
 
 export default TaskScreen;
