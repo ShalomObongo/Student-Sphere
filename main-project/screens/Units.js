@@ -11,13 +11,7 @@ const db = getFirestore();
 const Units=()=>{
 
     const [search, setSearch] = useState('');
-    const [items, setItems] = useState([
-        { label: '--Select role--', value: null },
-        { label: 'Student', value: 'student' },
-        { label: 'Admin', value: 'admin' },
-        { label: 'Teacher', value: 'teacher' },
-      ]);
-    const [open, setOpen] = useState(false);
+    const [filteredUnits, setFilteredUnits] = useState([]);
     const [units, setUnits] = useState([]);
 
       const navigation=useNavigation()
@@ -37,6 +31,7 @@ const Units=()=>{
                 const querySnapshot = await getDocs(q);
                 const unitsData = querySnapshot.docs.map(doc => doc.data());
                 setUnits(unitsData);
+                setFilteredUnits(unitsData);
               } else {
                 console.warn("User document does not exist");
               }
@@ -51,9 +46,14 @@ const Units=()=>{
         fetchUnits();
       }, []);
 
-    const updateSearch = (search) => {
+      const updateSearch = (search) => {
         setSearch(search);
-    };
+        if (search) {
+          setFilteredUnits(units.filter(unit => unit.sbj_name.toLowerCase().startsWith(search.toLowerCase())));
+        } else {
+          setFilteredUnits(units); // Reset to all units when search is cleared
+        }
+      };
 
     const goToUnit=(sbj_id)=>{
         navigation.navigate('View Unit',{sbj_id})
@@ -81,7 +81,7 @@ return (
         onChangeText={updateSearch}
       />
     {/* Display units that match user's Class_ID */}
-    {units.map((unit, index) => (
+    {filteredUnits.map((unit, index) => (
           <TouchableOpacity key={index} style={styles.unit} onPress={()=>goToUnit(unit.sbj_id)}>
             <Text style={styles.unitTxt}>{unit.sbj_name}</Text>
             <Icon name="arrow-right-circle" type="material-community" style={styles.icon} />

@@ -1,4 +1,4 @@
-import React,{useEffect, useState,useCallback} from 'react';
+import React,{useEffect, useState} from 'react';
 import { View, Text, Button, StyleSheet, Alert, Touchable, TouchableOpacity } from 'react-native';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
@@ -11,6 +11,7 @@ const db = getFirestore();
 const DashboardScreen = () => {
   /* State variable to store the user's first name */
   const [firstName, setFirstName] = useState('');
+  const [role, setRole] = useState('');
   const navigation = useNavigation();
 
   useEffect(() => {

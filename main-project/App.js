@@ -17,9 +17,11 @@ import Announcements from './screens/Announcements';
 import UnitView from './screens/UnitView';
 import ViewAnnouncement from './screens/ViewAnnouncement';
 import AddCourseContent from './screens/AddCourseContent';
+import Recommendations from './screens/Recommendations';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import AddAnnounce from './screens/addAnnounce';
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -142,6 +144,16 @@ a                 />
                     name="Add course content"
                     component={AddCourseContent}
                     options={{ title: 'Add course content' }}
+                />
+                <Stack.Screen
+                    name="Recommendations"
+                    component={Recommendations}
+                    options={{ title: 'Recommendations' }}
+                />
+                <Stack.Screen
+                    name="Submit announcement"
+                    component={AddAnnounce}
+                    options={{ title: 'Submit announcement' }}
                 />
             </Stack.Navigator>
 

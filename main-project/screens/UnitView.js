@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { ScrollView, Text, View, StyleSheet,SafeAreaView,TouchableOpacity } from "react-native";
+import { ScrollView, Text, View, StyleSheet,SafeAreaView,TouchableOpacity,Linking,RefreshControl } from "react-native";
 import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
 import { useRoute } from "@react-navigation/native";
 import { auth } from '../firebase';
 import { Icon } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
+import { ref, getDownloadURL } from "firebase/storage";
 
 
 const db = getFirestore();
@@ -16,48 +17,61 @@ const UnitView=()=>{
     const route = useRoute();
     const { sbj_id } = route.params;
     const [teacher, setTeacher] = useState(null);
-  
-    useEffect(() => {
-      const fetchSubjectName = async () => {
-            try {
-              const q = query(collection(db, "Subject"), where("sbj_id", "==", sbj_id));
-              const querySnapshot = await getDocs(q);
-              if (!querySnapshot.empty) {
-                const subjectData = querySnapshot.docs[0].data();
-                setSubjectName(subjectData.sbj_name);
-              }
-            } catch (error) {
-              console.error("Error fetching subject name:", error);
-            }
-          };
+    const [refreshing, setRefreshing] = useState(false);
 
-      const fetchTeacher = async () => {
-            try {
-              const q = query(collection(db, "Teachers"), where("sbj_id", "==", sbj_id));
-              const querySnapshot = await getDocs(q);
-              if (!querySnapshot.empty) {
-                const teacherData = querySnapshot.docs[0].data();
-                setTeacher(teacherData);
-              }
-            } catch (error) {
-              console.error("Error fetching teacher:", error);
-            }
-          };
 
-      const fetchTopics = async () => {
-        try {
-          const q = query(collection(db, "Topics"), where("sbj_id", "==", sbj_id));
-          const querySnapshot = await getDocs(q);
-          const topicsData = querySnapshot.docs.map(doc => doc.data());
-          setTopics(topicsData);
-        } catch (error) {
-          console.error("Error fetching topics:", error);
+    
+    const fetchSubjectName = async () => {
+      try {
+        const q = query(collection(db, "Subject"), where("sbj_id", "==", sbj_id));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const subjectData = querySnapshot.docs[0].data();
+          setSubjectName(subjectData.sbj_name);
         }
-      };
+      } catch (error) {
+        console.error("Error fetching subject name:", error);
+      }
+    };
+    
+    const fetchTeacher = async () => {
+      try {
+        const q = query(collection(db, "Teachers"), where("sbj_id", "==", sbj_id));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const teacherData = querySnapshot.docs[0].data();
+          setTeacher(teacherData);
+        }
+      } catch (error) {
+        console.error("Error fetching teacher:", error);
+      }
+    };
+
+    const fetchTopics = async () => {
+      try {
+        const q = query(collection(db, "Topics"), where("sbj_id", "==", sbj_id));
+        const querySnapshot = await getDocs(q);
+        const topicsData = querySnapshot.docs.map(doc => doc.data());
+        setTopics(topicsData);
+      } catch (error) {
+        console.error("Error fetching topics:", error);
+      }
+    };
+    useEffect(() => {
+      
       fetchSubjectName();
       fetchTopics();
       fetchTeacher();
     }, [sbj_id]);
+
+
+    const onRefresh = async () => {
+      setRefreshing(true);
+      await fetchSubjectName();
+      await fetchTopics();
+      await fetchTeacher();
+      setRefreshing(false);
+    };
 
     const normalTopics = topics.filter(topic => topic.Type === 'Normal');
     const extraTopics = topics.filter(topic => topic.Type === 'Extra');
@@ -66,10 +80,29 @@ const UnitView=()=>{
     const gotoForm=()=>{
       navigation.navigate('Add course content',{sbj_id})
     }
+    const handleOpenURL = (url) => {
+      const validUrl = url.startsWith('http://') || url.startsWith('https://') ? url : `http://${url}`;
+      Linking.openURL(validUrl).catch(err => console.error("Failed to open URL:", err));
+    }
+
+    const handleFileDownload = async (fileName) => {
+      try {
+        const storageRef = ref(storage, `course_files/${fileName}`);
+        const downloadURL = await getDownloadURL(storageRef);
+        Linking.openURL(downloadURL);
+      } catch (error) {
+        console.error("Error downloading file:", error);
+        Alert.alert("Error", "Failed to download the file.");
+      }
+    };
   
     return (
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.container}>
+        <ScrollView contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        >
         <Text style={styles.title}>{subjectName}</Text>
         {teacher && (
           <View style={styles.teacherContainer}>
@@ -83,7 +116,11 @@ const UnitView=()=>{
           <View key={index} style={styles.topicContainer}>
             <Text style={styles.topicName}>{topic.Name}</Text>
             <Text style={styles.topicFile}>File: {topic.File}</Text>
-            <Text style={styles.topicURL}>URL: {topic.URL}</Text>
+            {topic.URL && (
+              <TouchableOpacity onPress={() =>handleOpenURL(topic.URL)}>
+                <Text style={styles.topicURL}>URL: {topic.URL}</Text>
+              </TouchableOpacity>
+            )}
         
           </View>
         ))}
@@ -92,7 +129,17 @@ const UnitView=()=>{
           <View key={index} style={styles.topicContainer}>
             <Text style={styles.topicName}>{topic.Name}</Text>
             <Text style={styles.topicFile}>File: {topic.File}</Text>
-            <Text style={styles.topicURL}>URL: {topic.URL}</Text>
+            {topic.URL && (
+              <TouchableOpacity onPress={() => handleOpenURL(topic.URL)}>
+                <Text style={styles.topicURL}>URL: {topic.URL}</Text>
+              </TouchableOpacity>
+            )}
+            {topic.File && (
+              <TouchableOpacity onPress={() => handleFileDownload(topic.File)}>
+                <Text style={styles.topicFile}>Download File</Text>
+              </TouchableOpacity>
+            )}
+        
             <Text style={styles.topicReason}>Reason: {topic.Reason}</Text>
           </View>
         ))}
