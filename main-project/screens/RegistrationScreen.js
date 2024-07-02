@@ -105,6 +105,24 @@ const RegistrationScreen = () => {
 
       });
 
+      if (role === 'student') {
+        await setDoc(doc(db, 'Student_List', user.uid), {
+          F_name: firstName,
+          L_name: '',
+          Class_ID: '',
+        });
+      }
+
+      if (role === 'teacher') {
+        await setDoc(doc(db, 'Teachers', user.uid), {
+          F_name: firstName,
+          L_name: '',
+          sbj_id: '',
+          Office: '',
+          Email:user.email
+        });
+      }
+
       await setDoc(doc(db, 'User roles', user.uid), {
         firstName: firstName,
         role: role,

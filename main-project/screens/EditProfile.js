@@ -30,7 +30,6 @@ const EditProfile = () => {
   }, []);
   const navigation = useNavigation();
   const GoToResetPwd = () => {
-    /* Navigate to the Reset password screen when the "Go to Reset Password" button is pressed */
     navigation.navigate('Reset password');
   };
 
@@ -161,7 +160,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     alignItems: 'center',
     marginTop: 10,
-    zIndex: 0, // Ensure the zIndex of the button is lower
+    zIndex: 0,
   },
   editbtnText: {
     color: 'white',

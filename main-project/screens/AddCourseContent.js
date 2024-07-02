@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc } from 'firebase/firestore';
 import { useRoute, useNavigation } from '@react-navigation/native';
-
-const db = getFirestore();
+import * as DocumentPicker from 'expo-document-picker';
+import { db, storage } from '../firebase'; 
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const AddCourseContent = () => {
   const [url, setUrl] = useState('');
@@ -14,8 +15,42 @@ const AddCourseContent = () => {
   const navigation = useNavigation();
   const { sbj_id } = route.params;
 
-  const handleSubmit = async () => {
+  const handleFilePick = async () => {
     try {
+      const result = await DocumentPicker.getDocumentAsync({});
+      if (result.type === 'success') {
+        const fileUri = result.uri;
+        const fileName = result.name;
+        const fileType = result.mimeType;
+        setFile(fileName);
+
+        console.log('Selected file:', fileName);
+
+        const storageRef = ref(storage, `course_files/${fileName}`);
+        const response = await fetch(fileUri);
+        const blob = await response.blob();
+
+        await uploadBytes(storageRef, blob, { contentType: fileType });
+
+        const downloadURL = await getDownloadURL(storageRef);
+        console.log('Download URL:', downloadURL); 
+        setUrl(downloadURL);
+        Alert.alert("File uploaded", "File has been uploaded successfully!");
+      }
+    } catch (err) {
+      console.error("Error picking file: ", err);
+      Alert.alert("Error", "Failed to pick or upload the file.");
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!url) {
+      Alert.alert("Error", "Please upload a file first.");
+      return;
+    }
+    
+    try {
+      console.log('File to be added:', file); 
       await addDoc(collection(db, "Topics"), {
         URL: url,
         File: file,
@@ -41,12 +76,9 @@ const AddCourseContent = () => {
         value={url}
         onChangeText={setUrl}
       />
-      <TextInput
-        style={styles.input}
-        placeholder="File"
-        value={file}
-        onChangeText={setFile}
-      />
+      <TouchableOpacity style={styles.fileButton} onPress={handleFilePick}>
+        <Text style={styles.fileButtonText}>Pick File</Text>
+      </TouchableOpacity>
       <TextInput
         style={styles.input}
         placeholder="Name"
@@ -87,6 +119,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 15,
     backgroundColor: '#fff',
+  },
+  fileButton: {
+    backgroundColor: '#1a73e8',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  fileButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   button: {
     backgroundColor: '#1a73e8',

@@ -12,6 +12,7 @@ import styles from '../styles/taskstyles.js'; // Import the styles
 const TaskScreen = () => {
     const [tasks, setTasks] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
+
     const [newTask, setNewTask] = useState({ title: '', description: '', category: '', deadline: null, priority: '' });
     const [open, setOpen] = useState(false);
     const [priority, setPriority] = useState(null);
@@ -35,6 +36,7 @@ const TaskScreen = () => {
     };
 
     const addTask = async () => {
+
         setIsLoading(true);
         const taskWithId = { ...newTask, priority, id: Date.now().toString(), status: 'incomplete', progress: 0 };
         try {
@@ -66,6 +68,9 @@ const TaskScreen = () => {
             setIsLoading(false);
         }
     };
+
+
+
 
     const toggleTaskStatus = async (id) => {
         const taskIndex = tasks.findIndex(task => task.id === id);
@@ -210,6 +215,7 @@ const TaskScreen = () => {
                 </View>
             )}
             <Text style={styles.title}>Tasks</Text>
+
             <View style={styles.sortButtonsContainer}>
                 <TouchableOpacity style={styles.sortButton} onPress={sortTasksByDeadline}>
                     <Text style={styles.sortButtonText}>
