@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, Button } from 'react-native';
+import { KeyboardAvoidingView, View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, Button, ActivityIndicator } from 'react-native';
 import { auth, db } from '../firebase';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
@@ -29,6 +29,7 @@ const RegistrationScreen = () => {
   const [countryCode, setCountryCode] = useState('');
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [countryPickerVisible, setCountryPickerVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const validatePhoneNumber = (number) => {
   const phoneNumberPattern = /^\+[1-9]{1}[0-9]{3,14}$/;
   return phoneNumberPattern.test(number);
@@ -88,6 +89,7 @@ const RegistrationScreen = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
       const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredentials.user;
@@ -128,10 +130,12 @@ const RegistrationScreen = () => {
 
       await sendVerificationEmail(user);
 
+      setIsLoading(false);
       Alert.alert('Registration Successful', 'A verification email has been sent to your email address.');
 
       navigation.navigate('Dashboard');
     } catch (error) {
+      setIsLoading(false);
       Alert.alert('Registration Failed', error.message);
       console.log('Registration failed:', error.message);
     }
@@ -240,10 +244,23 @@ const RegistrationScreen = () => {
           />
         </View>
         <Text style={styles.loginText}>Already have an account? <Text style={styles.loginLink} onPress={gotoLogin}>Login</Text></Text>
-        <TouchableOpacity style={styles.registerBtn} onPress={handleRegistration}>
-          <Text style={styles.registerBtnText}>Register</Text>
+        <TouchableOpacity 
+          style={styles.registerBtn} 
+          onPress={handleRegistration}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.registerBtnText}>Register</Text>
+          )}
         </TouchableOpacity>
       </View>
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#000" />
+        </View>
+      )}
     </KeyboardAvoidingView>
   );
 };
@@ -342,7 +359,16 @@ const styles = StyleSheet.create({
     color: '#007bff',
     fontWeight: 'bold',
   },
-
+  loadingOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
 });
 
 export default RegistrationScreen;

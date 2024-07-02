@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
+import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { auth, db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -10,6 +10,7 @@ const EditProfile = () => {
   const [firstName, setFirstName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const validatePhoneNumber = (number) => {
     const phoneNumberPattern = /^\+[1-9]{1}[0-9]{3,14}$/;
@@ -49,6 +50,7 @@ const EditProfile = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
       await updateDoc(doc(db, 'users', user.uid), {
         firstName: firstName,
@@ -59,6 +61,8 @@ const EditProfile = () => {
     } catch (error) {
       Alert.alert('Update Failed', error.message);
       console.log('Update failed:', error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -86,8 +90,16 @@ const EditProfile = () => {
         </View>
 
 
-        <TouchableOpacity style={styles.editBtn} onPress={handleUpdate}>
-          <Text style={styles.editbtnText}>Update</Text>
+        <TouchableOpacity 
+          style={styles.editBtn} 
+          onPress={handleUpdate}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.editbtnText}>Update</Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -97,6 +109,11 @@ const EditProfile = () => {
           <Text style={styles.navBtnText}>Go to Reset Password</Text>
         </TouchableOpacity>
       </View>
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#000" />
+        </View>
+      )}
     </KeyboardAvoidingView>
   );
 };
@@ -171,7 +188,16 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 20,
   },
-
+  loadingOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
 });
 
 export default EditProfile;

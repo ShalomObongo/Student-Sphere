@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, View, Text, TextInput, Alert, TouchableOpacity, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, View, Text, TextInput, Alert, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
@@ -10,8 +10,10 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = () => {
+    setIsLoading(true);
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredentials) => {
         const user = userCredentials.user;
@@ -21,8 +23,12 @@ const LoginScreen = () => {
           index: 0,
           routes: [{ name: 'Dashboard' }],
         });
+        setIsLoading(false);
       })
-      .catch((error) => Alert.alert('Login Failed. Email or password is incorrect', error.message));
+      .catch((error) => {
+        Alert.alert('Login Failed. Email or password is incorrect', error.message);
+        setIsLoading(false);
+      });
   };
 
   const handlePasswordReset = () => {
@@ -77,15 +83,28 @@ const LoginScreen = () => {
           /> 
         </View>
         <Text style={styles.signupText}>Don't have an account?
-          <Text style={styles.signupLink} onPress={gotoRegister}>Sign up</Text>
+          <Text style={styles.signupLink} onPress={gotoRegister}> Sign up</Text>
           </Text>
-        <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-          <Text style={styles.btnText}>Login</Text>
+        <TouchableOpacity 
+          style={styles.loginBtn} 
+          onPress={handleLogin}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.btnText}>Login</Text>
+          )}
         </TouchableOpacity>
         <TouchableOpacity style={styles.resetBtn} onPress={handlePasswordReset}>
           <Text style={styles.btnText}>Reset Password</Text>
         </TouchableOpacity>
       </View>
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#000" />
+        </View>
+      )}
     </KeyboardAvoidingView>
   );
 };
@@ -165,6 +184,16 @@ const styles = StyleSheet.create({
   signupLink: {
     color: '#007bff',
     fontWeight: 'bold',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 });
 
