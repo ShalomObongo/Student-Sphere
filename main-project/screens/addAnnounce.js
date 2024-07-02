@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Image, StyleSheet, TouchableOpacity, Text, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { getFirestore, collection, addDoc,getDoc,doc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDoc, doc } from "firebase/firestore";
 import { getStorage, ref, uploadFile, getDownloadURL } from "firebase/storage";
-import { auth } from '../firebase'; // Assuming you have your Firebase config
+import { auth } from '../firebase'; 
 
 const db = getFirestore();
 const storage = getStorage();
 
-const AddAnnounce = () => {
+const AddAnnounce = ({ route }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [imageUri, setImageUri] = useState(null); // State to store image URI
+  const [imageUri, setImageUri] = useState(null); 
+  const { Class_ID } = route.params;
+
+  console.log("Class_ID received:", Class_ID);
 
   const handleChooseImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -46,7 +49,7 @@ const AddAnnounce = () => {
       quality: 1,
     });
 
-    if (!pickerResult.canceled) {
+    if (!pickerResult.cancelled) {
       setImageUri(pickerResult.uri);
     }
   };
@@ -59,45 +62,38 @@ const AddAnnounce = () => {
     try {
       const user = auth.currentUser;
       const userId = user ? user.uid : null;
-  
-      // Fetch user document to get Class_ID
-      const userDoc = await getDoc(doc(db, "Users", userId));
-      const Class_ID = userDoc.exists() ? userDoc.data().Class_ID : null;
-  
+
       let imageUrl = null;
       if (imageUri) {
-        const imageName = `announcement_${Date.now()}.jpg`; // Unique image name
-        const storageRef = ref(storage, `course_images/${imageName}`);
+        const imageName = `announcement_${Date.now()}.jpg`; 
+        const storageRef = ref(storage, `announcement_images/${imageName}`);
         await uploadFile(storageRef, imageUri);
         imageUrl = await getDownloadURL(storageRef);
       }
-  
+
       const docRef = await addDoc(collection(db, "Announcements"), {
         Approve: false,
         Disapprove: false,
         Title: title,
         Description: description,
         Image: imageUrl,
-        URL: "", // Add URL field if needed
-        Class_ID: Class_ID,
-        Type: "Class", // Assuming you have a default type or set it dynamically
+        URL: "", 
+        Class_ID: Class_ID, 
+        Type: "Class", 
       });
-  
+
       console.log("Announcement added with ID: ", docRef.id);
-  
-      // Clear form fields after submission
+
       setTitle("");
       setDescription("");
       setImageUri(null);
-  
-      // Show success message or navigate to another screen
+
       Alert.alert("Success", "Announcement added successfully!");
     } catch (error) {
       console.error("Error adding announcement: ", error);
       Alert.alert("Error", "Failed to add announcement. Please try again later.");
     }
   };
-  
 
   return (
     <View style={styles.container}>

@@ -1,54 +1,56 @@
 import React, { useState, useEffect } from "react";
-import { ScrollView, Text, View, StyleSheet, TouchableOpacity,RefreshControl } from "react-native";
+import { ScrollView, Text, View, StyleSheet, TouchableOpacity, RefreshControl } from "react-native";
 import { Icon } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
 import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { auth } from '../firebase';
-// import { Icon } from "react-native-elements";
 
 const db = getFirestore();
 
 const Announcements = () => {
   const [announcements, setAnnouncements] = useState([]);
-  const [userClassID, setUserClassID] = useState(null);
-  const [selectedType, setSelectedType] = useState('general'); // State for selected type
+  const [userRole, setUserRole] = useState(null);
+  const [selectedType, setSelectedType] = useState('general');
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
-    const fetchUserClassID = async () => {
+    const fetchUserRole = async () => {
       try {
         const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
         if (userDoc.exists()) {
-          setUserClassID(userDoc.data().Class_ID);
+          setUserRole(userDoc.data().role); 
         } else {
           console.log("No such document for user!");
-          // console.log(auth.currentUser.uid)
         }
       } catch (error) {
-        console.error("Error fetching user class ID:", error);
+        console.error("Error fetching user role:", error);
       }
     };
 
-    fetchUserClassID();
+    fetchUserRole();
   }, []);
 
   const fetchAnnouncements = async () => {
     try {
-      if (userClassID) {
-        let q;
-        if (selectedType === 'general') {
-          q = query(collection(db, "Announcements"), where("Type", "==", "General"));
-        } else {
+      let q;
+      if (selectedType === 'general') {
+        q = query(collection(db, "Announcements"), where("Type", "==", "General"));
+      } else {
+        if (userRole !== 'admin') {
+          const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+          const userClassID = userDoc.exists() ? userDoc.data().Class_ID : null;
           q = query(collection(db, "Announcements"), where("Class_ID", "==", userClassID), where("Type", "==", "Class"));
         }
+      }
+
+      if (q) {
         const querySnapshot = await getDocs(q);
         const fetchedAnnouncements = [];
         querySnapshot.forEach((doc) => {
           fetchedAnnouncements.push({ id: doc.id, ...doc.data() });
         });
         setAnnouncements(fetchedAnnouncements);
-        // console.log("Fetched Announcements:", fetchedAnnouncements);
       }
     } catch (error) {
       console.error("Error fetching announcements:", error);
@@ -57,7 +59,7 @@ const Announcements = () => {
 
   useEffect(() => {
     fetchAnnouncements();
-  }, [userClassID, selectedType]);
+  }, [selectedType, userRole]);
 
   const viewAnnouncement = (announcement) => {
     navigation.navigate('View Announcement', { announcement });
@@ -69,48 +71,52 @@ const Announcements = () => {
     setRefreshing(false);
   };
 
-  const gotoForm=()=>{
-    navigation.navigate('Submit announcement')
-  }
+  const gotoForm = () => {
+    navigation.navigate('Submit Announcement');
+  };
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollViewContainer}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContainer}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, selectedType === 'general' && styles.activeButton]}
-              onPress={() => setSelectedType('general')}
-            >
-              <Text style={styles.buttonText}>General</Text>
-            </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.button, selectedType === 'general' && styles.activeButton]}
+            onPress={() => setSelectedType('general')}
+          >
+            <Text style={styles.buttonText}>General</Text>
+          </TouchableOpacity>
+          {userRole !== 'admin' && (
             <TouchableOpacity
               style={[styles.button, selectedType === 'class' && styles.activeButton]}
               onPress={() => setSelectedType('class')}
             >
               <Text style={styles.buttonText}>Class</Text>
             </TouchableOpacity>
-          </View>
-          {announcements.length === 0 ? (
-            <Text style={styles.noAnnouncementsText}>No announcements available</Text>
-          ) : (
-            announcements.map((item) => (
-              <TouchableOpacity key={item.id} style={styles.announceBox} onPress={() => viewAnnouncement(item)}>
-                <Text style={styles.announceTitle}>{item.Title}</Text>
-                <Icon name='arrow-right-circle' type="material-community" />
-              </TouchableOpacity>
-            ))
           )}
-          {selectedType === 'class' && (
-            <TouchableOpacity style={styles.fab} onPress={gotoForm}>
-            <Icon name="plus" type="material-community" color="#fff" size={30} />
+        </View>
+        {announcements.length === 0 ? (
+          <Text style={styles.noAnnouncementsText}>No announcements available</Text>
+        ) : (
+          announcements.map((item) => (
+            <TouchableOpacity key={item.id} style={styles.announceBox} onPress={() => viewAnnouncement(item)}>
+              <Text style={styles.announceTitle}>{item.Title}</Text>
+              <Icon name='arrow-right-circle' type="material-community" />
             </TouchableOpacity>
-         )}
-        
+          ))
+        )}
+        {selectedType === 'class' && userRole !== 'admin' && (
+          <TouchableOpacity style={styles.fab} onPress={gotoForm}>
+            <Icon name="plus" type="material-community" color="#fff" size={30} />
+          </TouchableOpacity>
+        )}
+        { userRole === 'admin' && (
+        <TouchableOpacity style={styles.fab} onPress={gotoForm}>
+            <Icon name="plus" type="material-community" color="#fff" size={30} />
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </View>
   );

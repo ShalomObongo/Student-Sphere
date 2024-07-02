@@ -1,5 +1,5 @@
-import React,{useEffect, useState} from 'react';
-import { View, Text, Button, StyleSheet, Alert, Touchable, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Button, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
@@ -9,45 +9,40 @@ import { Icon } from 'react-native-elements';
 const db = getFirestore();
 
 const DashboardScreen = () => {
-  /* State variable to store the user's first name */
   const [firstName, setFirstName] = useState('');
   const [role, setRole] = useState('');
   const navigation = useNavigation();
 
   useEffect(() => {
-    /* Fetch the user's name from Firestore when the component mounts */
-    const fetchUserName = async () => {
-      const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
-      if (userDoc.exists()) {
-        /* Set the state with the fetched first name */
-        setFirstName(userDoc.data().firstName);
+    const fetchUserData = async () => {
+      const userDocRef = doc(db, 'users', auth.currentUser.uid);
+      const docSnap = await getDoc(userDocRef);
+
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        setFirstName(userData.firstName);
+        setRole(userData.role); 
       } else {
-        console.log("No such document!");
+        console.log('No such document!');
       }
     };
 
-    fetchUserName();
+    fetchUserData();
   }, []);
 
-  const GoToProfile=()=>{
-    /* Navigate to the Profile screen when the "Go to profile" button is pressed */
-    navigation.navigate('Profile screen')
-  }
+  const GoToProfile = () => {
+    navigation.navigate('Profile screen');
+  };
 
-  const GoToAnnounce=()=>{
-    navigation.navigate('Announcements')
-  }
-
-  const GoToUnits=()=>{
-    navigation.navigate('Units')
-  }
+  const GoToAnnounce = () => {
+    navigation.navigate('Announcements');
+  };
 
   const handleSignout = () => {
-    /* Handle sign-out functionality */
     signOut(auth)
       .then(() => {
         Alert.alert('Logout Successful');
-        console.log('Successful logout')
+        console.log('Successful logout');
         navigation.reset({
           index: 0,
           routes: [{ name: 'Home' }],
@@ -58,40 +53,46 @@ const DashboardScreen = () => {
       });
   };
 
-
   return (
     <View style={styles.container}>
-
       <View style={styles.greeting}>
         <Text style={styles.welcomeTxt}>Welcome back, {firstName}</Text>
-        {/* <Text>Email: {auth.currentUser?.email}</Text> */}
       </View>
 
       <View style={styles.profileContainer}>
         <TouchableOpacity style={styles.profile} onPress={GoToProfile}>
-            <Icon style={styles.icon} size={65} color='#fff' name='account' type='material-community'></Icon>
-            <Text style={styles.profileTxt}>Profile</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.profile} onPress={GoToAnnounce}>
-            <Icon style={styles.icon} size={65} color='#fff'  name='message-alert-outline' type='material-community'></Icon>
-            <Text style={styles.profileTxt} onPress={GoToAnnounce}>Announcements</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.profile} onPress={GoToUnits}>
-            <Icon style={styles.icon} size={65} color='#fff'  name='book-open-page-variant-outline' type='material-community'></Icon>
-            <Text style={styles.profileTxt} onPress={GoToUnits}>Units</Text>
-          </TouchableOpacity>
-         
-          <TouchableOpacity style={styles.profile} onPress={() => navigation.navigate('Task Screen')}>
-            <Icon style={styles.icon} size={65} color='black'  name='clock-time-eight' type='material-community'></Icon>
-            <Text style={styles.profileTxt}>Tasks</Text>
-          </TouchableOpacity>
-      </View>  
-      
-      <TouchableOpacity style={styles.logout} onPress={handleSignout}>
+          <Icon style={styles.icon} size={65} color='#fff' name='account' type='material-community' />
+          <Text style={styles.profileTxt}>Profile</Text>
+        </TouchableOpacity>
 
-          <Text style={styles.logoutTxt}>Logout</Text>
+        <TouchableOpacity style={styles.profile} onPress={GoToAnnounce}>
+          <Icon style={styles.icon} size={65} color='#fff' name='message-alert-outline' type='material-community' />
+          <Text style={styles.profileTxt}>Announcements</Text>
+        </TouchableOpacity>
+
+        {role === 'admin' ? (
+          <TouchableOpacity style={styles.profile} onPress={() => navigation.navigate('Table Options')}>
+            <Icon style={styles.icon} size={65} color='#fff' name='table-multiple' type='material-community' />
+            <Text style={styles.profileTxt}>Tables</Text>
+          </TouchableOpacity>
+        ) : (
+          <>
+            <TouchableOpacity style={styles.profile} onPress={() => navigation.navigate('Units')}>
+              <Icon style={styles.icon} size={65} color='#fff' name='book-open-page-variant-outline' type='material-community' />
+              <Text style={styles.profileTxt}>Units</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.profile} onPress={() => navigation.navigate('Task Screen')}>
+              <Icon style={styles.icon} size={65} color='black' name='clock-time-eight' type='material-community' />
+              <Text style={styles.profileTxt}>Tasks</Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+
+      <TouchableOpacity style={styles.logout} onPress={handleSignout}>
+        <Text style={styles.logoutTxt}>Logout</Text>
       </TouchableOpacity>
-      
     </View>
   );
 };
@@ -134,11 +135,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
   },
-  title: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
   welcomeTxt: {
     fontSize: 22,
     fontWeight: '600',
@@ -159,8 +155,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
   },
-  
-
 });
 
 export default DashboardScreen;

@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 import { collection, addDoc } from 'firebase/firestore';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import * as DocumentPicker from 'expo-document-picker';
-import { db, storage } from '../firebase'; // Adjust the path if needed
+import { db, storage } from '../firebase'; 
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const AddCourseContent = () => {
@@ -24,7 +24,7 @@ const AddCourseContent = () => {
         const fileType = result.mimeType;
         setFile(fileName);
 
-        console.log('Selected file:', fileName); // Debugging output
+        console.log('Selected file:', fileName);
 
         const storageRef = ref(storage, `course_files/${fileName}`);
         const response = await fetch(fileUri);
@@ -33,7 +33,7 @@ const AddCourseContent = () => {
         await uploadBytes(storageRef, blob, { contentType: fileType });
 
         const downloadURL = await getDownloadURL(storageRef);
-        console.log('Download URL:', downloadURL); // Debugging output
+        console.log('Download URL:', downloadURL); 
         setUrl(downloadURL);
         Alert.alert("File uploaded", "File has been uploaded successfully!");
       }
@@ -50,7 +50,7 @@ const AddCourseContent = () => {
     }
     
     try {
-      console.log('File to be added:', file); // Debugging output
+      console.log('File to be added:', file); 
       await addDoc(collection(db, "Topics"), {
         URL: url,
         File: file,

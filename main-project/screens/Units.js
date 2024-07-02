@@ -63,16 +63,7 @@ const Units=()=>{
 return (
 <ScrollView style={{flex:1}}>
     <View style={styles.container}>
-        {/* <Text>Select Semester:</Text> */}
-        {/* <DropDownPicker
-        open={open}
-        items={items}
-        placeholder="-- Choose semester --"
-        setItems={setItems}
-        style={{width:300}}
-        setOpen={setOpen}
-        dropDownContainerStyle={{width:'80%',zIndex:100}}
-        ></DropDownPicker> */}
+        
     <SearchBar
         placeholder={"Search Unit..."}
         containerStyle={styles.search}
@@ -80,7 +71,6 @@ return (
         value={search}
         onChangeText={updateSearch}
       />
-    {/* Display units that match user's Class_ID */}
     {filteredUnits.map((unit, index) => (
           <TouchableOpacity key={index} style={styles.unit} onPress={()=>goToUnit(unit.sbj_id)}>
             <Text style={styles.unitTxt}>{unit.sbj_name}</Text>

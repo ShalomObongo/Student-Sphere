@@ -22,6 +22,9 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import AddAnnounce from './screens/addAnnounce';
+import TableOptions from './screens/TableOptions';
+import StudentTable from './screens/StudentTable';
+import TeacherTable from './screens/TeacherTable';
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -155,6 +158,20 @@ a                 />
                     component={AddAnnounce}
                     options={{ title: 'Submit announcement' }}
                 />
+                <Stack.Screen
+                    name="Table Options"
+                    component={TableOptions}
+                    options={{ title: 'Table Options' }}
+                />
+                <Stack.Screen
+                    name="Student Table"
+                    component={StudentTable}
+                    options={{ title: 'Student Table' }}
+                /><Stack.Screen
+                    name="Teacher Table"
+                    component={TeacherTable}
+                    options={{ title: 'Teacher Table' }}
+            />
             </Stack.Navigator>
 
             <StatusBar style="auto" />

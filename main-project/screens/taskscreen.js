@@ -7,30 +7,21 @@ import { collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc } 
 import DropDownPicker from 'react-native-dropdown-picker'; // Import DropDownPicker
 
 const TaskScreen = () => {
-    // State to store the list of tasks
     const [tasks, setTasks] = useState([]);
-    // State to control the visibility of the modal for adding a new task
     const [modalVisible, setModalVisible] = useState(false);
-    // State to store the details of the new task being added
     const [newTask, setNewTask] = useState({ title: '', description: '', category: '', deadline: '', weight: '' });
-    // State to control the DropDownPicker
     const [open, setOpen] = useState(false);
     const [weight, setWeight] = useState(null);
 
-    // Function to add a new task to the list
     const addTask = async () => {
         const taskWithId = { ...newTask, weight, id: Date.now().toString(), status: 'incomplete', progress: 0 };
-        // Add the new task to Firestore
         try {
             const docRef = await addDoc(collection(db, 'Tasks'), {
                 ...taskWithId,
-                userId: auth.currentUser.uid, // Link task to the current user
+                userId: auth.currentUser.uid, 
             });
-            // Add the new task to the tasks array with the Firestore document ID
             setTasks([...tasks, { ...taskWithId, docId: docRef.id }]);
-            // Close the modal after adding the task
             setModalVisible(false);
-            // Reset the new task state to empty values
             setNewTask({ title: '', description: '', category: '', deadline: '', weight: '' });
             setWeight(null);
         } catch (error) {
@@ -38,7 +29,6 @@ const TaskScreen = () => {
         }
     };
 
-    // Function to fetch tasks from Firestore
     const fetchTasks = async () => {
         const q = query(collection(db, 'Tasks'), where('userId', '==', auth.currentUser.uid));
         const querySnapshot = await getDocs(q);
@@ -46,7 +36,6 @@ const TaskScreen = () => {
         setTasks(fetchedTasks);
     };
 
-    // Function to mark a task as complete
     const completeTask = async (id) => {
         const taskIndex = tasks.findIndex(task => task.id === id);
         if (taskIndex !== -1) {
@@ -54,7 +43,6 @@ const TaskScreen = () => {
             updatedTasks[taskIndex].status = 'complete';
             setTasks(updatedTasks);
 
-            // Ensure the task has a docId before updating Firestore
             const taskDocId = updatedTasks[taskIndex].docId;
             if (taskDocId) {
                 try {
@@ -69,14 +57,12 @@ const TaskScreen = () => {
         }
     };
 
-    // Function to delete a task
     const deleteTask = async (id) => {
         const taskIndex = tasks.findIndex(task => task.id === id);
         if (taskIndex !== -1) {
             const updatedTasks = tasks.filter(task => task.id !== id);
             setTasks(updatedTasks);
 
-            // Delete the task from Firestore
             try {
                 const taskDoc = doc(db, 'Tasks', tasks[taskIndex].docId);
                 await deleteDoc(taskDoc);
@@ -86,12 +72,10 @@ const TaskScreen = () => {
         }
     };
 
-    // useEffect hook to fetch tasks when the component mounts
     useEffect(() => {
         fetchTasks();
     }, []);
 
-    // useEffect hook to schedule notifications for tasks
     useEffect(() => {
         const scheduleNotifications = () => {
             tasks.forEach(task => {
@@ -99,7 +83,6 @@ const TaskScreen = () => {
                 const now = new Date();
                 const timeDiff = deadline - now;
 
-                // Schedule a notification if the task's deadline is in the future
                 if (timeDiff > 0) {
                     Notifications.scheduleNotificationAsync({
                         content: {
@@ -114,18 +97,14 @@ const TaskScreen = () => {
             });
         };
 
-        // Call the function to schedule notifications
         scheduleNotifications();
     }, [tasks]);
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Tasks</Text>
-            {/* Button to sort tasks by deadline */}
             <Button title="Sort by Deadline" onPress={() => setTasks(filterTasksByDeadline())} />
-            {/* Button to sort tasks by weight */}
             <Button title="Sort by Weight" onPress={() => setTasks(sortTasksByWeight())} />
-            {/* FlatList to display the list of tasks */}
             <FlatList
                 data={tasks}
                 renderItem={({ item }) => (
@@ -148,16 +127,13 @@ const TaskScreen = () => {
                 keyExtractor={item => item.id}
                 contentContainerStyle={styles.taskList}
             />
-            {/* Button to open the modal for adding a new task */}
             <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
                 <Icon name="plus" type="material-community" color="white" />
                 <Text style={styles.addButtonText}>Add Task</Text>
             </TouchableOpacity>
 
-            {/* Modal for adding a new task */}
             <Modal visible={modalVisible} animationType="slide">
                 <View style={styles.modalContainer}>
-                    {/* Input fields for the new task details */}
                     <TextInput
                         placeholder="Title"
                         value={newTask.title}
@@ -198,9 +174,7 @@ const TaskScreen = () => {
                         placeholder="Weight (1 - Low, 5 - High)"
                         dropDownContainerStyle={styles.dropdownContainerStyle}
                     />
-                    {/* Button to add the new task */}
                     <Button title="Add Task" onPress={addTask} />
-                    {/* Button to cancel and close the modal */}
                     <Button title="Cancel" onPress={() => setModalVisible(false)} />
                 </View>
             </Modal>

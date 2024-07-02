@@ -4,35 +4,27 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { auth } from '../firebase';
 import { reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
 
-// Component for resetting the password
 const ResetPwd = () => {
-  // State variables to manage password visibility and input values
   const [showPassword, setShowPassword] = useState(false);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Function to toggle the visibility of the password
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
-  // Function to handle the password reset process
   const handleResetPassword = () => {
-    // Check if new password and confirm password match
     if (newPassword !== confirmPassword) {
       alert('New password and confirm password do not match');
       return;
     }
 
-    // Get the current user and their credentials
     const user = auth.currentUser;
     const credential = EmailAuthProvider.credential(user.email, oldPassword);
 
-    // Reauthenticate the user with their old password
     reauthenticateWithCredential(user, credential)
       .then(() => {
-        // Update the password with the new password
         updatePassword(user, newPassword)
           .then(() => {
             Alert.alert('Success', 'Password changed successfully');
@@ -51,7 +43,6 @@ const ResetPwd = () => {
       <View style={styles.container}>
         <Text style={styles.title}>Change password</Text>
 
-        {/* Input field for old password */}
         <View style={styles.inputBox}>
           <TextInput
             style={styles.input}
@@ -69,7 +60,6 @@ const ResetPwd = () => {
           />
         </View>
 
-        {/* Input field for new password */}
         <View style={styles.inputBox}>
           <TextInput
             style={styles.input}
@@ -87,7 +77,6 @@ const ResetPwd = () => {
           />
         </View>
 
-        {/* Input field to confirm new password */}
         <View style={styles.inputBox}>
           <TextInput
             style={styles.input}
@@ -105,7 +94,6 @@ const ResetPwd = () => {
           />
         </View>
 
-        {/* Button to trigger password reset */}
         <TouchableOpacity style={styles.resetBtn} onPress={handleResetPassword}>
           <Text style={styles.resetbtnText}>Reset</Text>
         </TouchableOpacity>
@@ -114,7 +102,6 @@ const ResetPwd = () => {
   );
 };
 
-// Styles for the component
 const styles = StyleSheet.create({
   container: {
     flex: 1,

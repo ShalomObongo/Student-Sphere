@@ -51,7 +51,6 @@ const LoginScreen = () => {
         <Text style={styles.title}>Log in to your account</Text>
         <Text style={styles.subtitle}>Welcome back! Please enter your details</Text>
         <View style={styles.inputBox}>
-          {/* <Text style={styles.text}>Email:</Text> */}
           <TextInput
             style={styles.input}
             placeholder="Enter valid email"
@@ -62,7 +61,6 @@ const LoginScreen = () => {
           />
         </View>
         <View style={styles.inputBox}>
-          {/* <Text style={styles.text}>Password:</Text> */}
           <TextInput
             style={styles.input}
             placeholder="Enter password"
