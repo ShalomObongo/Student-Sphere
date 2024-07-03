@@ -6,7 +6,8 @@ import { collection, getDocs, query, where, doc, getDoc, addDoc } from "firebase
 import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from 'expo-linear-gradient';
-import AddAnnouncement from './addAnnounce'; // Add this import
+import AddAnnouncement from './addAnnounce';
+import { Icon } from 'react-native-elements';
 
 const Announcements = () => {
   const [generalAnnouncements, setGeneralAnnouncements] = useState([]);
@@ -15,7 +16,7 @@ const Announcements = () => {
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
   const [isTeacher, setIsTeacher] = useState(false);
-  const [isAddAnnouncementVisible, setIsAddAnnouncementVisible] = useState(false); // Add this state
+  const [isAddAnnouncementVisible, setIsAddAnnouncementVisible] = useState(false);
 
   const checkUserRole = useCallback(async () => {
     const user = auth.currentUser;
@@ -76,8 +77,44 @@ const Announcements = () => {
     }, [fetchAnnouncements])
   );
 
+  const renderGhostAnnouncement = () => (
+    <Card style={[styles.card, styles.ghostCard]}>
+      <Card.Content>
+        <View style={styles.ghostTitle} />
+        <View style={styles.ghostDescription} />
+      </Card.Content>
+    </Card>
+  );
+
+  const renderGhostUnit = () => (
+    <View style={[styles.unitStack, styles.ghostUnitStack]}>
+      <View style={styles.ghostUnitName} />
+    </View>
+  );
+
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return (
+      <LinearGradient
+        colors={['#4c669f', '#3b5998', '#192f6a']}
+        style={styles.container}
+      >
+        <Text style={styles.sectionTitle}>General Announcements</Text>
+        <FlatList
+          data={[1, 2, 3]}
+          renderItem={renderGhostAnnouncement}
+          keyExtractor={(item) => item.toString()}
+        />
+
+        <Text style={styles.sectionTitle}>
+          {isTeacher ? "All Unit Announcements" : "Enrolled Unit Announcements"}
+        </Text>
+        <FlatList
+          data={[1, 2, 3, 4, 5]}
+          renderItem={renderGhostUnit}
+          keyExtractor={(item) => item.toString()}
+        />
+      </LinearGradient>
+    );
   }
 
   return (
@@ -178,9 +215,32 @@ const styles = StyleSheet.create({
   addButton: {
     marginBottom: 10,
   },
+  ghostCard: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginBottom: 20,
+  },
+  ghostTitle: {
+    width: '70%',
+    height: 20,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 4,
+    marginBottom: 10,
+  },
+  ghostDescription: {
+    width: '100%',
+    height: 40,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 4,
+  },
+  ghostUnitStack: {
+    backgroundColor: 'rgba(75,123,236,0.3)',
+  },
+  ghostUnitName: {
+    width: '70%',
+    height: 20,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 4,
+  },
 });
 
 export default Announcements;
-
-
-
