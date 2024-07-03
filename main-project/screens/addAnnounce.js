@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Image, StyleSheet, TouchableOpacity, Text, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { getFirestore, collection, addDoc, getDoc, doc } from "firebase/firestore";
-import { getStorage, ref, uploadFile, getDownloadURL } from "firebase/storage";
+import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth } from '../firebase'; 
 
 const db = getFirestore();
@@ -65,9 +65,12 @@ const AddAnnounce = ({ route }) => {
 
       let imageUrl = null;
       if (imageUri) {
+        const response = await fetch(imageUri);
+        const blob = await response.blob();
+
         const imageName = `announcement_${Date.now()}.jpg`; 
-        const storageRef = ref(storage, `announcement_images/${imageName}`);
-        await uploadFile(storageRef, imageUri);
+        const storageRef = ref(storage, `course_images/${imageName}`);
+        await uploadBytes(storageRef, blob);
         imageUrl = await getDownloadURL(storageRef);
       }
 
