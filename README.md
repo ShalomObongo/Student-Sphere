@@ -1,4 +1,5 @@
 #  Student-Sphere:A mobile application that aggregates student learning activities
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 # Project Description
 - This is a mobile student companion application that aggregates student learning activities.Its aim is to make access to learning resources easier and to enhance student's time management by providing a student-based task manager and reduce time wastage by aggregating student resources.
 
@@ -84,8 +85,6 @@ Student-Sphere/
 ├── package-lock.json                           # Captures exact versions of Expo dependencies
 └── README.md                                   # Holds the project's documentation 
 ```
-## License
-MIT
 
 
 # Acknowledgement
