@@ -12,6 +12,7 @@ import Units from './Units';
 import TaskScreen from './taskscreen';
 import TableOptions from './TableOptions';
 import Requests from './Request';
+import Analytics from './Analytics';
 
 
 const db = getFirestore();
@@ -239,6 +240,16 @@ const DashboardScreen = () => {
                 <Icon name='account-lock-open' type='material-community' color={color} size={size} />
               ),
               title: 'Requests',
+            }}
+          />
+          <Tab.Screen 
+            name="Analytics" 
+            component={Analytics} 
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <Icon name='google-analytics' type='material-community' color={color} size={size} />
+              ),
+              title: 'Analytics',
             }}
           />
           </>
