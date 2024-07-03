@@ -1,5 +1,5 @@
 import { React, useState, useCallback } from "react";
-import { ScrollView, Text, View, StyleSheet, TouchableOpacity, ActivityIndicator, Image } from "react-native";
+import { ScrollView, Text, View, StyleSheet, TouchableOpacity, ActivityIndicator, Image, FlatList } from "react-native";
 import { Icon, SearchBar } from 'react-native-elements'
 import { useNavigation } from "@react-navigation/native";
 import { getFirestore, collection, query, where, getDocs, doc, getDoc, addDoc, deleteDoc } from "firebase/firestore";
@@ -125,6 +125,18 @@ const Units = () => {
         }
     };
 
+    const renderGhostUnit = () => (
+        <View style={[styles.unitCard, styles.ghostUnit]}>
+            <View style={styles.unitContent}>
+                <View style={styles.ghostUnitName} />
+                <View style={styles.ghostUnitCode} />
+                <View style={styles.ghostUnitDetails} />
+            </View>
+            <View style={[styles.enrollButton, styles.ghostEnrollButton]} />
+            <View style={styles.ghostChevron} />
+        </View>
+    );
+
     return (
         <LinearGradient
             colors={['#4c669f', '#3b5998', '#192f6a']}
@@ -144,7 +156,12 @@ const Units = () => {
             </View>
 
             {isLoading ? (
-                <ActivityIndicator size="large" color="#ffffff" style={styles.loader} />
+                <FlatList
+                    data={[1, 2, 3, 4, 5]} // Render 5 ghost units
+                    renderItem={renderGhostUnit}
+                    keyExtractor={(item) => item.toString()}
+                    contentContainerStyle={styles.scrollContent}
+                />
             ) : (
                 <ScrollView contentContainerStyle={styles.scrollContent}>
                     {filteredUnits.map((unit, index) => (
@@ -295,6 +312,41 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    ghostUnit: {
+        backgroundColor: 'rgba(255,255,255,0.1)',
+    },
+    ghostUnitName: {
+        width: '70%',
+        height: 20,
+        backgroundColor: 'rgba(255,255,255,0.3)',
+        borderRadius: 4,
+        marginBottom: 5,
+    },
+    ghostUnitCode: {
+        width: '40%',
+        height: 15,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 4,
+        marginBottom: 5,
+    },
+    ghostUnitDetails: {
+        width: '50%',
+        height: 15,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 4,
+    },
+    ghostEnrollButton: {
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        width: 80,
+        height: 36,
+    },
+    ghostChevron: {
+        width: 20,
+        height: 20,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 10,
+    },
 });
 
 export default Units;
+

@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { Icon } from 'react-native-elements';
 import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Animatable from 'react-native-animatable';
 
 const db = getFirestore();
 
@@ -28,65 +30,103 @@ const Requests = () => {
     navigation.navigate('Process ID Request', { Request_ID: requestId });
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.requestItem}>
+  const renderItem = ({ item, index }) => (
+    <Animatable.View 
+      animation="fadeInUp" 
+      delay={index * 100} 
+      style={styles.requestItem}
+    >
       <TouchableOpacity style={styles.touchable} onPress={() => gotoRequest(item.id)}>
-        <View style={styles.textContainer}>
-          <Text style={styles.requestName}>{item.Name}</Text>
-          <Text style={styles.requestDescription}>{item.Description}</Text>
-          <Text style={styles.requestDescription}>Request ID:{item.Request_ID}</Text>
-        </View>
-        <Icon name="arrow-right-circle" type="material-community" color="#4b7bec" size={30} />
+        <LinearGradient
+          colors={['#4b7bec', '#3867d6']}
+          style={styles.gradientBackground}
+        >
+          <View style={styles.textContainer}>
+            <Text style={styles.requestName}>{item.Name}</Text>
+            <Text style={styles.requestDescription}>{item.Description}</Text>
+            <Text style={styles.requestId}>Request ID: {item.Request_ID}</Text>
+          </View>
+          <Icon name="chevron-right" type="material-community" color="#fff" size={30} />
+        </LinearGradient>
       </TouchableOpacity>
-    </View>
+    </Animatable.View>
   );
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#4c669f', '#3b5998', '#192f6a']}
+      style={styles.container}
+    >
+      <Animatable.Text 
+        animation="fadeInDown" 
+        style={styles.title}
+      >
+        Requests
+      </Animatable.Text>
       <FlatList
         data={requests}
         renderItem={renderItem}
         keyExtractor={item => item.id}
+        contentContainerStyle={styles.listContainer}
       />
-    </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#f0f4f7',
+    paddingTop: 20,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 20,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: -1, height: 1 },
+    textShadowRadius: 10,
+  },
+  listContainer: {
+    padding: 16,
   },
   requestItem: {
-    padding: 15,
-    backgroundColor: '#ffffff',
+    marginBottom: 16,
     borderRadius: 10,
-    marginBottom: 15,
+    overflow: 'hidden',
+    elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   touchable: {
+    flex: 1,
+  },
+  gradientBackground: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    padding: 16,
   },
   textContainer: {
     flex: 1,
-    marginRight: 10,
   },
   requestName: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#fff',
     marginBottom: 5,
-    color: '#333',
   },
   requestDescription: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 14,
+    color: '#e6e6e6',
+    marginBottom: 5,
+  },
+  requestId: {
+    fontSize: 12,
+    color: '#bdc3c7',
   },
 });
 

@@ -17,7 +17,7 @@ const TaskScreen = () => {
     const [newTask, setNewTask] = useState({ title: '', description: '', category: '', deadline: null, priority: '' });
     const [open, setOpen] = useState(false);
     const [priority, setPriority] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [editTask, setEditTask] = useState({ id: '', title: '', description: '', category: '', deadline: null, priority: '' });
     const [sortOrder, setSortOrder] = useState({ deadline: 'asc', priority: 'asc' });
@@ -208,6 +208,20 @@ const TaskScreen = () => {
         setSortOrder({ ...sortOrder, priority: sortOrder.priority === 'asc' ? 'desc' : 'asc' });
     };
 
+    const renderGhostTask = () => (
+        <View style={[styles.taskItem, styles.ghostTask]}>
+            <View style={styles.ghostTitle} />
+            <View style={styles.ghostDescription} />
+            <View style={styles.ghostProgress} />
+            <View style={styles.ghostSlider} />
+            <View style={styles.buttonContainer}>
+                <View style={[styles.actionButton, styles.ghostButton]} />
+                <View style={[styles.actionButton, styles.ghostButton]} />
+                <View style={[styles.actionButton, styles.ghostButton]} />
+            </View>
+        </View>
+    );
+
     return (
         <LinearGradient
             colors={['#4c669f', '#3b5998', '#192f6a']}
@@ -238,42 +252,51 @@ const TaskScreen = () => {
                 </TouchableOpacity>
             </View>
 
-            <FlatList
-                data={tasks}
-                renderItem={({ item }) => (
-                    <View style={[styles.taskItem, item.status === 'complete' && styles.taskItemComplete]}>
-                        <View style={styles.taskContent}>
-                            <Text style={styles.taskTitle}>{item.title}</Text>
-                            <Text style={styles.taskDescription}>{item.description}</Text>
-                            <Text style={styles.taskProgress}>Progress: {item.progress}%</Text>
-                            <Slider
-                                style={styles.slider}
-                                minimumValue={0}
-                                maximumValue={100}
-                                step={1}
-                                value={item.progress}
-                                onValueChange={(value) => updateTaskProgress(item.id, value)}
-                                minimumTrackTintColor="#4c669f"
-                                maximumTrackTintColor="#d3d3d3"
-                                thumbTintColor="#3b5998"
-                            />
+            {isLoading ? (
+                <FlatList
+                    data={[1, 2, 3, 4, 5]} // Render 5 ghost tasks
+                    renderItem={renderGhostTask}
+                    keyExtractor={(item) => item.toString()}
+                    contentContainerStyle={styles.taskList}
+                />
+            ) : (
+                <FlatList
+                    data={tasks}
+                    renderItem={({ item }) => (
+                        <View style={[styles.taskItem, item.status === 'complete' && styles.taskItemComplete]}>
+                            <View style={styles.taskContent}>
+                                <Text style={styles.taskTitle}>{item.title}</Text>
+                                <Text style={styles.taskDescription}>{item.description}</Text>
+                                <Text style={styles.taskProgress}>Progress: {item.progress}%</Text>
+                                <Slider
+                                    style={styles.slider}
+                                    minimumValue={0}
+                                    maximumValue={100}
+                                    step={1}
+                                    value={item.progress}
+                                    onValueChange={(value) => updateTaskProgress(item.id, value)}
+                                    minimumTrackTintColor="#4c669f"
+                                    maximumTrackTintColor="#d3d3d3"
+                                    thumbTintColor="#3b5998"
+                                />
+                            </View>
+                            <View style={styles.buttonContainer}>
+                                <TouchableOpacity style={styles.actionButton} onPress={() => toggleTaskStatus(item.id)}>
+                                    <Icon name={item.status === 'complete' ? 'undo' : 'check'} type="material" color="#fff" size={20} />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.actionButton} onPress={() => deleteTask(item.id)}>
+                                    <Icon name="delete" type="material" color="#fff" size={20} />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.actionButton} onPress={() => openEditModal(item)}>
+                                    <Icon name="edit" type="material" color="#fff" size={20} />
+                                </TouchableOpacity>
+                            </View>
                         </View>
-                        <View style={styles.buttonContainer}>
-                            <TouchableOpacity style={styles.actionButton} onPress={() => toggleTaskStatus(item.id)}>
-                                <Icon name={item.status === 'complete' ? 'undo' : 'check'} type="material" color="#fff" size={20} />
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.actionButton} onPress={() => deleteTask(item.id)}>
-                                <Icon name="delete" type="material" color="#fff" size={20} />
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.actionButton} onPress={() => openEditModal(item)}>
-                                <Icon name="edit" type="material" color="#fff" size={20} />
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                )}
-                keyExtractor={item => item.id}
-                contentContainerStyle={styles.taskList}
-            />
+                    )}
+                    keyExtractor={item => item.id}
+                    contentContainerStyle={styles.taskList}
+                />
+            )}
 
             <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
                 <Icon name="add" type="material" color="white" size={30} />
@@ -626,6 +649,40 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         color: '#fff',
+    },
+    ghostTask: {
+        backgroundColor: 'rgba(255,255,255,0.1)',
+    },
+    ghostTitle: {
+        width: '70%',
+        height: 20,
+        backgroundColor: 'rgba(255,255,255,0.3)',
+        borderRadius: 4,
+        marginBottom: 10,
+    },
+    ghostDescription: {
+        width: '90%',
+        height: 15,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 4,
+        marginBottom: 10,
+    },
+    ghostProgress: {
+        width: '40%',
+        height: 12,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 4,
+        marginBottom: 5,
+    },
+    ghostSlider: {
+        width: '100%',
+        height: 20,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 10,
+        marginBottom: 10,
+    },
+    ghostButton: {
+        backgroundColor: 'rgba(255,255,255,0.2)',
     },
 });
 

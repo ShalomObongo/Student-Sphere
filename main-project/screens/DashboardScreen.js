@@ -204,15 +204,6 @@ const DashboardScreen = () => {
           }}
         />
         <Tab.Screen 
-          name="Profile" 
-          component={ProfileScreen} 
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Icon name='account' type='material-community' color={color} size={size} />
-            ),
-          }}
-        />
-        <Tab.Screen 
           name="Announcements" 
           component={Announcements} 
           options={{
@@ -275,6 +266,15 @@ const DashboardScreen = () => {
             />
           </>
         )}
+        <Tab.Screen 
+          name="Profile" 
+          component={ProfileScreen} 
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Icon name='account' type='material-community' color={color} size={size} />
+            ),
+          }}
+        />
       </Tab.Navigator>
     </View>
   );
@@ -389,3 +389,4 @@ const styles = StyleSheet.create({
 });
 
 export default DashboardScreen;
+
