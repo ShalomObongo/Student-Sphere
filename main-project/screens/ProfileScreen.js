@@ -39,6 +39,11 @@ const ProfileScreen = () => {
         } else {
             console.log("No user is currently logged in.");
             setIsLoading(false);
+            // Clear user data when no user is logged in
+            setFirstName('');
+            setEmail('');
+            setRole('');
+            setNumber('');
         }
     }, []);
 
@@ -61,6 +66,11 @@ const ProfileScreen = () => {
                 .then(() => {
                     Alert.alert('Logout Successful');
                     console.log('Successful logout');
+                    // Clear user data immediately after logout
+                    setFirstName('');
+                    setEmail('');
+                    setRole('');
+                    setNumber('');
                     navigation.reset({
                         index: 0,
                         routes: [{ name: 'Welcome' }],

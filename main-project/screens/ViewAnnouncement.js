@@ -1,94 +1,236 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, Linking, TouchableOpacity } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, Alert, TouchableOpacity, Modal, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
+import { Card, Title, Paragraph, Button, TextInput } from 'react-native-paper';
+import { db } from "../firebase";
+import { collection, getDocs, query, where, addDoc, serverTimestamp } from "firebase/firestore";
+import { LinearGradient } from 'expo-linear-gradient';
+import { Icon } from 'react-native-elements';
 
-const ViewAnnouncement = () => {
-  const route = useRoute();
-  const { announcement } = route.params;
+const ViewAnnouncement = ({ route }) => {
+  const { unitId, isTeacher, unitName } = route.params;
+  const [unitAnnouncements, setUnitAnnouncements] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [newAnnouncementTitle, setNewAnnouncementTitle] = useState('');
+  const [newAnnouncementDescription, setNewAnnouncementDescription] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+
+  useEffect(() => {
+    fetchUnitAnnouncements();
+  }, [unitId]);
+
+  const fetchUnitAnnouncements = async () => {
+    try {
+      const announcementsQuery = query(
+        collection(db, "Announcements"),
+        where("Type", "==", "Class"),
+        where("unitId", "==", unitId)
+      );
+      const announcementsSnapshot = await getDocs(announcementsQuery);
+      const announcementsData = announcementsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setUnitAnnouncements(announcementsData);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching unit announcements: ", error);
+      setLoading(false);
+    }
+  };
+
+  const addAnnouncement = async () => {
+    if (!isTeacher) {
+      Alert.alert("Error", "Only teachers can add announcements.");
+      return;
+    }
+
+    if (!newAnnouncementTitle || !newAnnouncementDescription) {
+      Alert.alert("Error", "Please fill in both title and description.");
+      return;
+    }
+
+    try {
+      const newAnnouncement = {
+        Title: newAnnouncementTitle,
+        Description: newAnnouncementDescription,
+        Type: "Class",
+        unitId: unitId,
+        createdAt: serverTimestamp()
+      };
+
+      await addDoc(collection(db, "Announcements"), newAnnouncement);
+      setNewAnnouncementTitle('');
+      setNewAnnouncementDescription('');
+      Alert.alert("Success", "Announcement added successfully!");
+      fetchUnitAnnouncements(); // Refresh the announcements list
+    } catch (error) {
+      console.error("Error adding announcement: ", error);
+      Alert.alert("Error", "Failed to add announcement. Please try again.");
+    }
+  };
+
+  const renderAnnouncement = ({ item }) => (
+    <Card style={styles.card}>
+      <Card.Content>
+        <Title style={styles.cardTitle}>{item.Title}</Title>
+        <Paragraph style={styles.cardDescription}>{item.Description}</Paragraph>
+      </Card.Content>
+    </Card>
+  );
+
+  if (loading) {
+    return (
+      <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#ffffff" />
+      </LinearGradient>
+    );
+  }
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-      <View style={styles.container}>
-        <Text style={styles.title}>{announcement.Title}</Text>
-        {announcement.Image && (
-          <Image source={{ uri: announcement.Image }} style={styles.image} />
-        )}
-        <Text style={styles.subtitle}>Description</Text>
-        <Text style={styles.description}>{announcement.Description}</Text>
-        {announcement.URL && (
-          <TouchableOpacity onPress={() => Linking.openURL(announcement.URL)}>
-            <Text style={styles.url}>Visit URL</Text>
-          </TouchableOpacity>
-        )}
-        <View style={styles.approveDisapproveContainer}>
-          <Text style={styles.approveDisapproveText}>Approve: {announcement.Approve}</Text>
-          <Text style={styles.approveDisapproveText}>Disapprove: {announcement.Disapprove}</Text>
-        </View>
+    <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerText}>Announcements for {unitName}</Text>
       </View>
-    </ScrollView>
+      <FlatList
+        data={unitAnnouncements}
+        renderItem={renderAnnouncement}
+        keyExtractor={(item) => item.id}
+        ListEmptyComponent={<Text style={styles.emptyText}>No announcements for this unit</Text>}
+        contentContainerStyle={styles.listContainer}
+      />
+      {isTeacher && (
+        <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
+          <Icon name="add" type="material" color="#ffffff" size={24} />
+          <Text style={styles.addButtonText}>Add Announcement</Text>
+        </TouchableOpacity>
+      )}
+
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.modalContainer}
+        >
+          <ScrollView contentContainerStyle={styles.modalContent}>
+            <View style={styles.addAnnouncementContainer}>
+              <TextInput
+                label="Announcement Title"
+                value={newAnnouncementTitle}
+                onChangeText={setNewAnnouncementTitle}
+                style={styles.input}
+                theme={{ colors: { primary: '#4c669f' } }}
+              />
+              <TextInput
+                label="Announcement Description"
+                value={newAnnouncementDescription}
+                onChangeText={setNewAnnouncementDescription}
+                multiline
+                style={[styles.input, styles.textArea]}
+                theme={{ colors: { primary: '#4c669f' } }}
+              />
+              <Button mode="contained" onPress={addAnnouncement} style={styles.submitButton}>
+                Add Announcement
+              </Button>
+              <Button mode="outlined" onPress={() => setModalVisible(false)} style={styles.cancelButton}>
+                Cancel
+              </Button>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </Modal>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  scrollViewContainer: {
-    flexGrow: 1,
+  container: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 24,
-    backgroundColor: '#f8f8f8',
   },
-  container: {
-    alignItems: 'center',
-    width: '90%',
-    backgroundColor: '#fff',
-    borderRadius: 10,
+  headerContainer: {
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 3,
+    alignItems: 'center',
   },
-  title: {
+  headerText: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    color: '#ffffff',
     textAlign: 'center',
-    color: '#333',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: -1, height: 1 },
+    textShadowRadius: 10,
   },
-  image: {
-    width: '100%',
-    height: 200,
-    borderRadius: 10,
-    marginBottom: 20,
+  listContainer: {
+    padding: 16,
   },
-  subtitle: {
+  card: {
+    marginBottom: 16,
+    elevation: 4,
+    borderRadius: 8,
+  },
+  cardTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 10,
-    alignSelf: 'flex-start',
+    fontWeight: 'bold',
   },
-  description: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 20,
-    textAlign: 'justify',
+  cardDescription: {
+    fontSize: 14,
+    marginTop: 8,
   },
-  url: {
-    fontSize: 16,
-    color: '#1a73e8',
-    marginBottom: 20,
-    textDecorationLine: 'underline',
+  emptyText: {
+    textAlign: 'center',
+    fontStyle: 'italic',
+    color: '#ffffff',
+    marginTop: 20,
   },
-  approveDisapproveContainer: {
+  addButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#2EE49B',
+    borderRadius: 30,
+    padding: 15,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    alignItems: 'center',
+    elevation: 5,
   },
-  approveDisapproveText: {
-    fontSize: 16,
-    color: '#333',
+  addButtonText: {
+    color: '#ffffff',
+    marginLeft: 8,
+    fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  addAnnouncementContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    padding: 20,
+  },
+  input: {
+    marginBottom: 16,
+  },
+  textArea: {
+    height: 100,
+  },
+  submitButton: {
+    marginTop: 16,
+    backgroundColor: '#4c669f',
+  },
+  cancelButton: {
+    marginTop: 8,
+    borderColor: '#4c669f',
   },
 });
 
