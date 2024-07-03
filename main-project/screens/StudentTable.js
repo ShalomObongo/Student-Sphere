@@ -1,20 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, ActivityIndicator } from "react-native";
-import { DataTable, Text, Headline, Divider } from "react-native-paper";
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { View, StyleSheet, ActivityIndicator, ScrollView } from "react-native";
+import { DataTable, Text, Headline, Divider, TextInput, Button } from "react-native-paper";
+import { getFirestore, collection, getDocs, updateDoc, doc } from "firebase/firestore";
 
 const db = getFirestore();
 
 const StudentTable = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editableData, setEditableData] = useState([]);
+  const [editingIndex, setEditingIndex] = useState(null);
 
   useEffect(() => {
     const fetchStudents = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "Student_List"));
-        const studentsList = querySnapshot.docs.map(doc => doc.data());
+        const studentsList = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
         setStudents(studentsList);
+        setEditableData(studentsList.map(student => ({ ...student })));
       } catch (error) {
         console.error("Error fetching student data: ", error);
       } finally {
@@ -24,6 +30,35 @@ const StudentTable = () => {
 
     fetchStudents();
   }, []);
+
+  const handleEdit = (index) => {
+    setEditingIndex(index);
+  };
+
+  const handleSave = async (index) => {
+    try {
+      const student = editableData[index];
+      await updateDoc(doc(db, "Student_List", student.id), {
+        Class_ID: student.Class_ID,
+        F_name: student.F_name,
+        L_name: student.L_name
+      });
+      setEditingIndex(null);
+    } catch (error) {
+      console.error("Error updating student data: ", error);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingIndex(null);
+    setEditableData(students.map(student => ({ ...student })));
+  };
+
+  const handleInputChange = (text, field, index) => {
+    const newData = [...editableData];
+    newData[index][field] = text;
+    setEditableData(newData);
+  };
 
   if (loading) {
     return (
@@ -37,21 +72,66 @@ const StudentTable = () => {
     <View style={styles.container}>
       <Headline style={styles.title}>Student List</Headline>
       <Divider style={styles.divider} />
-      <DataTable>
-        <DataTable.Header>
-          <DataTable.Title style={styles.tableHeader}>Class ID</DataTable.Title>
-          <DataTable.Title style={styles.tableHeader}>First Name</DataTable.Title>
-          <DataTable.Title style={styles.tableHeader}>Last Name</DataTable.Title>
-        </DataTable.Header>
+      <ScrollView horizontal={true}>
+        <View style={styles.tableContainer}>
+          <DataTable style={styles.table}>
+            <DataTable.Header style={styles.tableHeader}>
+              <DataTable.Title style={styles.headerCell}>Class ID</DataTable.Title>
+              <DataTable.Title style={styles.headerCell}>First Name</DataTable.Title>
+              <DataTable.Title style={styles.headerCell}>Last Name</DataTable.Title>
+              <DataTable.Title style={styles.headerCell}>Actions</DataTable.Title>
+            </DataTable.Header>
 
-        {students.map((student, index) => (
-          <DataTable.Row key={index} style={styles.tableRow}>
-            <DataTable.Cell style={styles.tableCell}>{student.Class_ID}</DataTable.Cell>
-            <DataTable.Cell style={styles.tableCell}>{student.F_name}</DataTable.Cell>
-            <DataTable.Cell style={styles.tableCell}>{student.L_name}</DataTable.Cell>
-          </DataTable.Row>
-        ))}
-      </DataTable>
+            {editableData.map((student, index) => (
+              <DataTable.Row key={student.id} style={styles.tableRow}>
+                <DataTable.Cell style={styles.dataCell}>
+                  {editingIndex === index ? (
+                    <TextInput
+                      value={student.Class_ID}
+                      onChangeText={(text) => handleInputChange(text, "Class_ID", index)}
+                      style={styles.input}
+                    />
+                  ) : (
+                    student.Class_ID
+                  )}
+                </DataTable.Cell>
+                <DataTable.Cell style={styles.dataCell}>
+                  {editingIndex === index ? (
+                    <TextInput
+                      value={student.F_name}
+                      onChangeText={(text) => handleInputChange(text, "F_name", index)}
+                      style={styles.input}
+                    />
+                  ) : (
+                    student.F_name
+                  )}
+                </DataTable.Cell>
+                <DataTable.Cell style={styles.dataCell}>
+                  {editingIndex === index ? (
+                    <TextInput
+                      value={student.L_name}
+                      onChangeText={(text) => handleInputChange(text, "L_name", index)}
+                      style={styles.input}
+                    />
+                  ) : (
+                    student.L_name
+                  )}
+                </DataTable.Cell>
+                <DataTable.Cell style={styles.actionCell}>
+                  {editingIndex === index ? (
+                    <View style={styles.actionButtons}>
+                      <Button mode="contained" onPress={() => handleSave(index)}>Save</Button>
+                      <Button mode="outlined" onPress={handleCancel}>Cancel</Button>
+                    </View>
+                  ) : (
+                    <Button mode="contained" onPress={() => handleEdit(index)}>Edit</Button>
+                  )}
+                </DataTable.Cell>
+              </DataTable.Row>
+            ))}
+          </DataTable>
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -78,15 +158,58 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  tableContainer: {
+    minWidth: 800,  // Adjust as needed to ensure proper horizontal scrolling
+  },
+  table: {
+    backgroundColor: "#ffffff",
+    borderRadius: 8,
+    overflow: "hidden",
+    elevation: 2,
+  },
   tableHeader: {
+    backgroundColor: "#4b7bec",
+    flexDirection: "row",
+  },
+  headerCell: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 6,
+    color: "#ffffff",
     fontWeight: "bold",
-    color: "#4b7bec",
+    textAlign: "center",
   },
   tableRow: {
-    backgroundColor: "#fff",
+    backgroundColor: "#f9f9f9",
+    flexDirection: "row",
   },
-  tableCell: {
+  dataCell: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 6,
     color: "#333",
+    textAlign: "center",
+  },
+  input: {
+    backgroundColor: "#e3e3e3",
+    borderRadius: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    fontSize: 14,
+  },
+  actionCell: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  actionButtons: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 10,
   },
 });
 

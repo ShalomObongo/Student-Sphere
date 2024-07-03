@@ -75,7 +75,7 @@ const TeacherTable = () => {
       <Headline style={styles.title}>Teacher List</Headline>
       <Divider style={styles.divider} />
       <ScrollView horizontal={true}>
-        <View>
+        <View style={styles.tableContainer}>
           <DataTable style={styles.table}>
             <DataTable.Header style={styles.tableHeader}>
               <DataTable.Title style={styles.headerCell}>Email</DataTable.Title>
@@ -185,6 +185,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  tableContainer: {
+    minWidth: 800,  // Adjust as needed to ensure proper horizontal scrolling
+  },
   table: {
     backgroundColor: "#ffffff",
     borderRadius: 8,
@@ -200,7 +203,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 12,
-    paddingHorizontal: 6,
+    paddingHorizontal: 10,  // Increased padding for more space
     color: "#ffffff",
     fontWeight: "bold",
     textAlign: "center",
@@ -214,7 +217,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 10,
-    paddingHorizontal: 6,
+    paddingHorizontal: 10,  // Increased padding for more space
     color: "#333",
     textAlign: "center",
   },
@@ -222,7 +225,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#e3e3e3",
     borderRadius: 5,
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 6,  
     fontSize: 14,
   },
   actionCell: {
