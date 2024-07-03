@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { TouchableOpacity, KeyboardAvoidingView, StyleSheet, Text, TextInput, View, Alert, ActivityIndicator } from 'react-native';
+import { TouchableOpacity, KeyboardAvoidingView, StyleSheet, Text, TextInput, View, Alert, ActivityIndicator, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { auth } from '../firebase';
 import { reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const ResetPwd = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,11 +18,10 @@ const ResetPwd = () => {
 
   const handleResetPassword = () => {
     if (newPassword !== confirmPassword) {
-      alert('New password and confirm password do not match');
+      Alert.alert('Error', 'New password and confirm password do not match');
       return;
     }
     setIsLoading(true);
-    // Get the current user and their credentials
     const user = auth.currentUser;
     const credential = EmailAuthProvider.credential(user.email, oldPassword);
 
@@ -44,63 +44,57 @@ const ResetPwd = () => {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior='padding'>
-      <View style={styles.container}>
-        <Text style={styles.title}>Change password</Text>
+    <LinearGradient
+      colors={['#4c669f', '#3b5998', '#192f6a']}
+      style={styles.container}
+    >
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.innerContainer}>
+        <Text style={styles.title}>Change Password</Text>
+        <Text style={styles.subtitle}>Enter your current password and choose a new one</Text>
 
         <View style={styles.inputBox}>
+          <MaterialCommunityIcons name="lock-outline" size={24} color="#fff" style={styles.icon} />
           <TextInput
             style={styles.input}
-            placeholder="Enter old password"
+            placeholder="Current Password"
+            placeholderTextColor="#bbb"
             secureTextEntry={!showPassword}
             value={oldPassword}
             onChangeText={setOldPassword}
           />
-          <MaterialCommunityIcons
-            name={showPassword ? 'eye-off' : 'eye'}
-            size={24}
-            color="#aaa"
-            style={styles.icon}
-            onPress={toggleShowPassword}
-          />
+          <TouchableOpacity onPress={toggleShowPassword} style={styles.eyeIcon}>
+            <MaterialCommunityIcons
+              name={showPassword ? 'eye-off' : 'eye'}
+              size={24}
+              color="#fff"
+            />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.inputBox}>
+          <MaterialCommunityIcons name="lock-plus-outline" size={24} color="#fff" style={styles.icon} />
           <TextInput
             style={styles.input}
-            placeholder="Enter new password"
+            placeholder="New Password"
+            placeholderTextColor="#bbb"
             secureTextEntry={!showPassword}
             value={newPassword}
             onChangeText={setNewPassword}
           />
-          <MaterialCommunityIcons
-            name={showPassword ? 'eye-off' : 'eye'}
-            size={24}
-            color="#aaa"
-            style={styles.icon}
-            onPress={toggleShowPassword}
-          />
         </View>
 
         <View style={styles.inputBox}>
+          <MaterialCommunityIcons name="lock-check-outline" size={24} color="#fff" style={styles.icon} />
           <TextInput
             style={styles.input}
-            placeholder="Confirm new password"
+            placeholder="Confirm New Password"
+            placeholderTextColor="#bbb"
             secureTextEntry={!showPassword}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
           />
-          <MaterialCommunityIcons
-            name={showPassword ? 'eye-off' : 'eye'}
-            size={24}
-            color="#aaa"
-            style={styles.icon}
-            onPress={toggleShowPassword}
-          />
         </View>
 
-
-        {/* Button to trigger password reset */}
         <TouchableOpacity 
           style={styles.resetBtn} 
           onPress={handleResetPassword}
@@ -109,76 +103,82 @@ const ResetPwd = () => {
           {isLoading ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Text style={styles.resetbtnText}>Reset</Text>
+            <Text style={styles.resetBtnText}>Reset Password</Text>
           )}
         </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
       {isLoading && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#000" />
+          <ActivityIndicator size="large" color="#fff" />
         </View>
       )}
-    </KeyboardAvoidingView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  innerContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    paddingHorizontal: 20,
   },
   title: {
-    fontSize: 40,
+    fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  input: {
-    flex: 1,
-    width: '100%',
-    height: 60,
-    fontSize: 18,
-    borderWidth: 0,
-    borderColor: '#ccc',
-    borderRadius: 5,
+    color: '#fff',
     marginBottom: 10,
-    padding: 10,
-    backgroundColor: 'lightgray',
-    color: 'black'
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#ddd',
+    marginBottom: 30,
+    textAlign: 'center',
   },
   inputBox: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 10,
     marginBottom: 20,
-    width: '80%',
-    backgroundColor: 'lightgray',
-    borderRadius: 10
-  },
-  resetBtn: {
-    width: 300,
-    padding: 10,
-    backgroundColor: 'black',
-    borderRadius: 15,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  resetbtnText: {
-    color: 'white',
-    fontSize: 20,
+    paddingHorizontal: 10,
+    width: '100%',
   },
   icon: {
-    marginLeft: 10,
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    height: 50,
+    color: '#fff',
+    fontSize: 16,
+  },
+  eyeIcon: {
+    padding: 10,
+  },
+  resetBtn: {
+    backgroundColor: '#2ECC71',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    marginTop: 20,
+    width: '100%',
+    alignItems: 'center',
+  },
+  resetBtnText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   loadingOverlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    alignItems: 'center',
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    alignItems: 'center',
   },
 });
 

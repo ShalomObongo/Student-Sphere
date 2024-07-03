@@ -1,9 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { KeyboardAvoidingView, View, Text, TextInput, Alert, TouchableOpacity, StyleSheet, ActivityIndicator, Animated } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  View,
+  Text,
+  TextInput,
+  Alert,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Animated,
+  Dimensions,
+  ImageBackground,
+  ScrollView,
+} from 'react-native';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
-import { MaterialCommunityIcons } from '@expo/vector-icons'; 
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { width, height } = Dimensions.get('window');
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -11,17 +27,32 @@ const LoginScreen = () => {
   const navigation = useNavigation();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(height)).current;
   const spinValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.loop(
-      Animated.timing(spinValue, {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 10000, // 10 seconds for a full rotation
+        duration: 1000,
         useNativeDriver: true,
-      })
-    ).start();
-  }, [spinValue]);
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        tension: 20,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+      Animated.loop(
+        Animated.timing(spinValue, {
+          toValue: 1,
+          duration: 10000,
+          useNativeDriver: true,
+        })
+      )
+    ]).start();
+  }, []);
 
   const spin = spinValue.interpolate({
     inputRange: [0, 1],
@@ -42,7 +73,7 @@ const LoginScreen = () => {
         setIsLoading(false);
       })
       .catch((error) => {
-        Alert.alert('Login Failed. Email or password is incorrect', error.message);
+        Alert.alert('Login Failed', 'Email or password is incorrect');
         setIsLoading(false);
       });
   };
@@ -59,182 +90,225 @@ const LoginScreen = () => {
       .catch((error) => Alert.alert('Error', error.message));
   };
 
-  const toggleShowPassword = () => { 
-    setShowPassword(!showPassword); 
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
   };
 
-  const gotoRegister=()=>{
-    navigation.navigate('Registration')
-  }
+  const gotoRegister = () => {
+    navigation.navigate('Registration');
+  };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior="padding">
-      <View style={styles.innerContainer}>
-        <Text style={styles.title}>Log in to your account</Text>
-        <Text style={styles.subtitle}>Welcome back! Please enter your details</Text>
-        <Animated.Image
-          source={require('../images/logo2.png')}
-          style={[styles.logo, { transform: [{ rotate: spin }] }]}
-        />
-        <View style={styles.inputBox}>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter valid email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
-        <View style={styles.inputBox}>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter password"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-          />
-          <TouchableOpacity onPress={toggleShowPassword} style={styles.iconContainer}>
-            <MaterialCommunityIcons 
-              name={showPassword ? 'eye-off' : 'eye'} 
-              size={24} 
-              color="#aaa"
-            />
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.signupText}>Don't have an account?
-          <Text style={styles.signupLink} onPress={gotoRegister}> Sign up</Text>
-        </Text>
-      </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.loginBtn} 
-          onPress={handleLogin}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.btnText}>Login</Text>
-          )}
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.resetBtn} onPress={handlePasswordReset}>
-          <Text style={styles.btnText}>Reset Password</Text>
-        </TouchableOpacity>
-      </View>
-      {isLoading && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#000" />
-        </View>
-      )}
-    </KeyboardAvoidingView>
+    <ImageBackground
+      source={require('../images/background.jpeg')}
+      style={styles.backgroundImage}
+    >
+      <LinearGradient
+        colors={['rgba(76, 102, 159, 0.8)', 'rgba(59, 89, 152, 0.8)', 'rgba(25, 47, 106, 0.8)']}
+        style={styles.gradient}
+      >
+        <KeyboardAvoidingView style={styles.container} behavior="padding">
+          <ScrollView contentContainerStyle={styles.scrollViewContent}>
+            <Animated.View
+              style={[
+                styles.innerContainer,
+                {
+                  opacity: fadeAnim,
+                  transform: [{ translateY: slideAnim }],
+                },
+              ]}
+            >
+              <Text style={styles.title}>Welcome Back</Text>
+              <Text style={styles.subtitle}>Log in to your account</Text>
+
+              <Animated.Image
+                source={require('../images/logo2.png')}
+                style={[
+                  styles.logo,
+                  {
+                    opacity: fadeAnim,
+                    transform: [{ rotate: spin }],
+                  },
+                ]}
+              />
+
+              <View style={styles.inputBox}>
+                <MaterialCommunityIcons name="email-outline" size={24} color="#fff" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email"
+                  placeholderTextColor="#ccc"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+
+              <View style={styles.inputBox}>
+                <MaterialCommunityIcons name="lock-outline" size={24} color="#fff" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Password"
+                  placeholderTextColor="#ccc"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                />
+                <TouchableOpacity onPress={toggleShowPassword} style={styles.iconContainer}>
+                  <MaterialCommunityIcons
+                    name={showPassword ? 'eye-off' : 'eye'}
+                    size={24}
+                    color="#fff"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity style={styles.forgotPassword} onPress={handlePasswordReset}>
+                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.loginBtn}
+                onPress={handleLogin}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.loginBtnText}>Login</Text>
+                )}
+              </TouchableOpacity>
+
+              <View style={styles.signupContainer}>
+                <Text style={styles.signupText}>Don't have an account?</Text>
+                <TouchableOpacity onPress={gotoRegister}>
+                  <Text style={styles.signupLink}>Sign up</Text>
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </LinearGradient>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
     paddingHorizontal: 20,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
   },
   innerContainer: {
     width: '100%',
     maxWidth: 400,
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 20,
+    padding: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#2E86C1',
+    color: '#fff',
+    marginBottom: 10,
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: -1, height: 1 },
+    textShadowRadius: 10,
   },
   subtitle: {
     fontSize: 18,
-    color: '#666',
-    marginBottom: 20,
+    color: '#e0e0e0',
+    marginBottom: 30,
     textAlign: 'center',
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 30,
   },
   inputBox: {
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
     marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#fff',
+  },
+  inputIcon: {
+    marginRight: 10,
   },
   input: {
     flex: 1,
     height: 50,
-    paddingHorizontal: 15,
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    color: '#fff',
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#ccc',
   },
   iconContainer: {
-    position: 'absolute',
-    right: 10,
+    padding: 10,
   },
-  buttonContainer: {
-    position: 'absolute',
-    bottom: 0,
-    width: '115%',
-    backgroundColor: '#2E86C1',
-    paddingVertical: 20,
-    alignItems: 'center',
-    borderRadius: 30,
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginBottom: 20,
+  },
+  forgotPasswordText: {
+    color: '#e0e0e0',
+    fontSize: 14,
   },
   loginBtn: {
-    width: '75%',
+    width: '100%',
+    backgroundColor: '#2E86C1',
     paddingVertical: 15,
-    backgroundColor: '#000',
-    borderRadius: 10,
+    borderRadius: 25,
     alignItems: 'center',
     marginBottom: 20,
-    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  resetBtn: {
-    width: '75%',
-    paddingVertical: 15,
-    backgroundColor: '#dc3545',
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 10,
-    elevation: 3,
-  },
-  btnText: {
+  loginBtnText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },
+  signupContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   signupText: {
-    marginTop: 20,
+    color: '#e0e0e0',
     fontSize: 16,
-    color: '#555',
-    textAlign: 'center',
-    marginBottom: 140,
   },
   signupLink: {
-    color: '#007bff',
+    color: '#2E86C1',
+    fontSize: 16,
     fontWeight: 'bold',
-  },
-  loadingOverlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  logo: {
-    width: 200,
-    height: 200,
-    marginBottom: 20,
-    marginTop: 20,
+    marginLeft: 5,
   },
 });
 
