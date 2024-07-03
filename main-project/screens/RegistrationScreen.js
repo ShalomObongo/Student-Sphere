@@ -110,7 +110,7 @@ const RegistrationScreen = () => {
         await setDoc(doc(db, 'Student_List', user.uid), {
           F_name: firstName,
           L_name: '',
-          Class_ID: '',
+          Class_ID: 'N/A',
         });
       }
 
@@ -118,7 +118,7 @@ const RegistrationScreen = () => {
         await setDoc(doc(db, 'Teachers', user.uid), {
           F_name: firstName,
           L_name: '',
-          sbj_id: '',
+          sbj_id: 'N/A',
           Office: '',
           Email:user.email
         });
