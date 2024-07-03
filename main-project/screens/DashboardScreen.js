@@ -11,6 +11,8 @@ import Announcements from './Announcements';
 import Units from './Units';
 import TaskScreen from './taskscreen';
 import TableOptions from './TableOptions';
+import Requests from './Request';
+
 
 const db = getFirestore();
 const Tab = createBottomTabNavigator();
@@ -219,6 +221,7 @@ const DashboardScreen = () => {
           }}
         />
         {role === 'admin' ? (
+          <>
           <Tab.Screen 
             name="Tables" 
             component={TableOptions} 
@@ -228,6 +231,17 @@ const DashboardScreen = () => {
               ),
             }}
           />
+          <Tab.Screen 
+            name="Requests" 
+            component={Requests} 
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <Icon name='account-lock-open' type='material-community' color={color} size={size} />
+              ),
+              title: 'Requests',
+            }}
+          />
+          </>
         ) : (
           <>
             <Tab.Screen 

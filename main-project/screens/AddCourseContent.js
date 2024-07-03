@@ -22,7 +22,6 @@ const AddCourseContent = () => {
         const fileUri = result.uri;
         const fileName = result.name;
         const fileType = result.mimeType;
-        setFile(fileName);
 
         console.log('Selected file:', fileName);
 
@@ -35,6 +34,7 @@ const AddCourseContent = () => {
         const downloadURL = await getDownloadURL(storageRef);
         console.log('Download URL:', downloadURL); 
         setUrl(downloadURL);
+        setFile(fileName);  // Ensure file state is updated correctly
         Alert.alert("File uploaded", "File has been uploaded successfully!");
       }
     } catch (err) {

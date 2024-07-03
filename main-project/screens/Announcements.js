@@ -71,8 +71,18 @@ const Announcements = () => {
     setRefreshing(false);
   };
 
-  const gotoForm = () => {
-    navigation.navigate('Submit Announcement');
+  const gotoForm = async () => {
+    try {
+      const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+      if (userDoc.exists()) {
+        const userClassID = userDoc.data().Class_ID;
+        navigation.navigate('Submit Announcement', { Class_ID: userClassID });
+      } else {
+        console.log("No such document for user!");
+      }
+    } catch (error) {
+      console.error("Error fetching user class ID:", error);
+    }
   };
 
   return (
