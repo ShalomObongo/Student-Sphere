@@ -27,7 +27,9 @@ import StudentTable from './screens/StudentTable';
 import TeacherTable from './screens/TeacherTable';
 import Requests from './screens/Request';
 import ProcessRequest from './screens/ProcessRequest';
+import AddUnit from './screens/AddUnit';
 import Analytics from './screens/Analytics';
+
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -186,9 +188,16 @@ a                 />
                     options={{ title: 'Process ID Request' }}
                 />
                 <Stack.Screen
+
+                    name="AddUnit"
+                    component={AddUnit}
+                    options={{ title: 'Add Unit' }}
+                    />
+                <Stack.Screen
                     name="Analytics"
                     component={Analytics}
                     options={{ title: 'Analytics' }}
+
                 />
             </Stack.Navigator>
 
