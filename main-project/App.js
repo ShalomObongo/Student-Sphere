@@ -25,6 +25,8 @@ import AddAnnounce from './screens/addAnnounce';
 import TableOptions from './screens/TableOptions';
 import StudentTable from './screens/StudentTable';
 import TeacherTable from './screens/TeacherTable';
+import Requests from './screens/Request';
+import ProcessRequest from './screens/ProcessRequest';
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -154,9 +156,9 @@ a                 />
                     options={{ title: 'Recommendations' }}
                 />
                 <Stack.Screen
-                    name="Submit announcement"
+                    name="Submit Announcement"
                     component={AddAnnounce}
-                    options={{ title: 'Submit announcement' }}
+                    options={{ title: 'Submit Announcement' }}
                 />
                 <Stack.Screen
                     name="Table Options"
@@ -171,7 +173,17 @@ a                 />
                     name="Teacher Table"
                     component={TeacherTable}
                     options={{ title: 'Teacher Table' }}
-            />
+                />
+                <Stack.Screen
+                    name="Requests"
+                    component={Requests}
+                    options={{ title: 'Requests' }}
+                />
+                <Stack.Screen
+                    name="Process ID Request"
+                    component={ProcessRequest}
+                    options={{ title: 'Process ID Request' }}
+                />
             </Stack.Navigator>
 
             <StatusBar style="auto" />

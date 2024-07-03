@@ -1,66 +1,40 @@
 # Project Title 
- student-Sphere
+ ##  Student-Sphere:A mobile application that aggregates student learning activities
 # Project Description
 - This is a mobile student companion application that aggregates student learning activities.Its aim is to make access to learning resources easier and to enhance student's time management by providing a student-based task manager and reduce time wastage by aggregating student resources.
 
 # Project Setup/Installation instructions
 - In order to use this application,you need to ensure that you have the Node LTS(Long Term Support) version and Expo installed on your computer.
-
-## Node JS installation
-Student-sphere requires the latest LTS version of Node.js.
-### Steps
-- Go to the official [Node JS Installation page](https://nodejs.org/en/download/package-manager).
-- Click on the Prebuilt Installer option
-- Choose the latest LTS version
-- Click on download Node.js.
-
-
-## Visual Studio Code installation
-### Steps
-- Go to the official [Visual Studio Code Installation page](https://code.visualstudio.com/download)
-- Click on your operating system and click on the download button.
-
-
- ## Expo installation
- ### On computer
-
-
- ### On phone
- #### Steps on Android
-- On your Android device, go to Play Store.
-- Search for the Expo Go app.
-- Download it.
-- After the download is complete,open the application.
-- Inorder to be able to run your application,you will be asked to create an Expo account.
-
-
-
-
- #### Steps on IOS 
- - Open the App store.
- - Click on the seacrh bar and search for Expo.
- - Download the application.
- - Open the application
- - Create your account.
-
-
- ## Repositiory setup
- - Create an empty folder anywhere on your computer and Name it "Application".
- - Open Visual Studio Code.
- - Open the "Application folder" in using Visual Studio Code.
- - Open the Integrated Terminal (Press Ctrl+` keys or In the top menu bar,click on View then click on Terminal).
- - Type  "git clone https://github.com/SMK-008/Student-Sphere.git" in the terminal and press enter.
  
- ```
+## List of dependencies
+- [React native](https://reactnative.dev/)
+- [Expo](https://docs.expo.dev/get-started/introduction/)
+- [Node Js](https://nodejs.org/en/download/package-manager)-Download Latest LTS(Long Term Support) version for your operation system
+
+ # Usage Instructions
+## 1)  Setup repositiory in folder of your choice
+```
+cd folder_of_your_choice/
 git clone https://github.com/SMK-008/Student-Sphere.git
- ```
-## Package/Depency installation
+```
+## 2) Start the server
 ```
 cd main-project/
-npm i or npm install
+npx expo start
 ```
+- In the terminal,the output will show a list of commands and a QR code.
+## 3) Opening app on mobile device
+### i)Scanning
+- Open your phones camera app and scan the QR code.
+### ii) Open emulator through terminal
+#### a) IOS
+- Click "I" on the terminal.
+#### b) Android
+- Click "a" on the terminal
+## 4) End server
+- Click "Ctrl + C" on the terminal
 
- # Usage instructions
+
  ## How to run
  - Ensure you navigate into the main-project directory.
  ```
@@ -107,4 +81,5 @@ Student-Sphere/
 ├── package-lock.json                           # Captures exact versions of Expo dependencies
 └── README.md                                   # Holds the project's documentation 
 ```
-
+## License
+MIT
