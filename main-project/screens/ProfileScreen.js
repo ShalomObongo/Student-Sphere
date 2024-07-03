@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, View, Text, TouchableOpacity, Alert, ActivityIndicator, ImageBackground } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { SafeAreaView, ScrollView, StyleSheet, View, Text, TouchableOpacity, Alert, ImageBackground } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { auth } from '../firebase';
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { signOut } from 'firebase/auth';
@@ -15,29 +15,45 @@ const ProfileScreen = () => {
     const [role, setRole] = useState('');
     const [email, setEmail] = useState('');
     const [phoneNumber, setNumber] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchUserDetails = async () => {
-            if (auth.currentUser) {
-                setIsLoading(true);
+    const fetchUserDetails = useCallback(async () => {
+        if (auth.currentUser) {
+            setIsLoading(true);
+            try {
                 const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
                 if (userDoc.exists()) {
-                    setFirstName(userDoc.data().firstName);
-                    setEmail(userDoc.data().email);
-                    setRole(userDoc.data().role);
-                    setNumber(userDoc.data().phoneNumber);
+                    const userData = userDoc.data();
+                    setFirstName(userData.firstName);
+                    setEmail(userData.email);
+                    setRole(userData.role);
+                    setNumber(userData.phoneNumber);
                 } else {
                     console.log("No such document!");
                 }
+            } catch (error) {
+                console.error("Error fetching user details:", error);
+            } finally {
                 setIsLoading(false);
-            } else {
-                console.log("No user is currently logged in.");
             }
-        };
-
-        fetchUserDetails();
+        } else {
+            console.log("No user is currently logged in.");
+            setIsLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchUserDetails();
+    }, [fetchUserDetails]);
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchUserDetails();
+            return () => {
+                setIsLoading(true);
+            };
+        }, [fetchUserDetails])
+    );
 
     const handleSignout = () => {
         if (auth.currentUser) {
@@ -78,17 +94,44 @@ const ProfileScreen = () => {
         </TouchableOpacity>
     );
 
-    return (
-        <SafeAreaView style={{ flex: 1 }}>
-            <ScrollView style={styles.container}>
-                {isLoading ? (
-                    <View style={styles.loadingOverlay}>
-                        <ActivityIndicator size="large" color="#fff" />
+    const renderGhostProfile = () => (
+        <View style={styles.content}>
+            <View style={styles.ghostHeaderBackground}>
+                <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.8)']}
+                    style={styles.gradient}
+                >
+                    <View style={styles.headerContent}>
+                        <View style={styles.ghostWelcomeTxt} />
+                        <View style={styles.ghostRoleTxt} />
                     </View>
-                ) : (
-                    <>
+                </LinearGradient>
+            </View>
+            <View style={styles.infoContainer}>
+                <View style={styles.infoItem}>
+                    <View style={styles.ghostIcon} />
+                    <View style={styles.ghostInfoText} />
+                </View>
+                <View style={styles.infoItem}>
+                    <View style={styles.ghostIcon} />
+                    <View style={styles.ghostInfoText} />
+                </View>
+            </View>
+            <View style={styles.profileNavigation}>
+                {[1, 2, 3, 4].map((_, index) => (
+                    <View key={index} style={[styles.profileButton, styles.ghostProfileButton]} />
+                ))}
+            </View>
+        </View>
+    );
+
+    return (
+        <SafeAreaView style={styles.container}>
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+                {isLoading ? renderGhostProfile() : (
+                    <View style={styles.content}>
                         <ImageBackground
-                            // source={require('../assets/profile-bg.jpg')}
+                            source={require('../images/full_logo.png')}
                             style={styles.headerBackground}
                         >
                             <LinearGradient
@@ -117,7 +160,7 @@ const ProfileScreen = () => {
                             <ProfileButton icon="edit" title="Edit Profile" onPress={gotoEdit} color="#FFC107" />
                             <ProfileButton icon="exit-to-app" title="Logout" onPress={handleSignout} color="#DC3545" />
                         </View>
-                    </>
+                    </View>
                 )}
             </ScrollView>
         </SafeAreaView>
@@ -129,8 +172,14 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f0f0f0',
     },
+    scrollContent: {
+        flexGrow: 1,
+    },
+    content: {
+        flex: 1,
+    },
     headerBackground: {
-        height: 200,
+        height: 250,
         justifyContent: 'flex-end',
     },
     gradient: {
@@ -141,7 +190,7 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     welcomeTxt: {
-        fontSize: 28,
+        fontSize: 32,
         fontWeight: 'bold',
         color: '#fff',
         textShadowColor: 'rgba(0, 0, 0, 0.75)',
@@ -149,7 +198,7 @@ const styles = StyleSheet.create({
         textShadowRadius: 10,
     },
     roleTxt: {
-        fontSize: 18,
+        fontSize: 20,
         color: '#fff',
         marginTop: 5,
         textShadowColor: 'rgba(0, 0, 0, 0.75)',
@@ -158,18 +207,22 @@ const styles = StyleSheet.create({
     },
     infoContainer: {
         backgroundColor: '#fff',
-        borderRadius: 10,
+        borderRadius: 15,
         margin: 20,
         padding: 20,
         elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
     },
     infoItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: 15,
     },
     infoText: {
-        marginLeft: 10,
+        marginLeft: 15,
         fontSize: 16,
         color: '#333',
     },
@@ -183,6 +236,10 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginBottom: 15,
         elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
     },
     buttonText: {
         marginLeft: 15,
@@ -190,11 +247,38 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: '600',
     },
-    loadingOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    ghostHeaderBackground: {
+        height: 250,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    ghostWelcomeTxt: {
+        width: '70%',
+        height: 32,
+        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        borderRadius: 4,
+        marginBottom: 10,
+    },
+    ghostRoleTxt: {
+        width: '50%',
+        height: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        borderRadius: 4,
+    },
+    ghostIcon: {
+        width: 24,
+        height: 24,
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        borderRadius: 12,
+    },
+    ghostInfoText: {
+        width: '70%',
+        height: 16,
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        borderRadius: 4,
+        marginLeft: 15,
+    },
+    ghostProfileButton: {
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
     },
 });
 

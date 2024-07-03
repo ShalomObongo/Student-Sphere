@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { KeyboardAvoidingView, View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, Button, ActivityIndicator, Image } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, ActivityIndicator, Image, Animated, Platform } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import DropDownPicker from 'react-native-dropdown-picker';
+import CountryPicker from 'react-native-country-picker-modal';
+import PhoneInput from 'react-native-phone-input';
 import { auth, db } from '../firebase';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import { doc, setDoc } from 'firebase/firestore';
-import DropDownPicker from 'react-native-dropdown-picker';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import CountryPicker from 'react-native-country-picker-modal';
-import PhoneInput from 'react-native-phone-input';
-import { Animated } from 'react-native';
 
 const RegistrationScreen = () => {
   const [email, setEmail] = useState('');
@@ -31,10 +31,10 @@ const RegistrationScreen = () => {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [countryPickerVisible, setCountryPickerVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const validatePhoneNumber = (number) => {
-  const phoneNumberPattern = /^\+[1-9]{1}[0-9]{3,14}$/;
-  return phoneNumberPattern.test(number);
-};
+  const phoneInput = useRef(null);
+  const validatePhoneNumber = () => {
+    return phoneInput.current?.isValidNumber();
+  };
 
   const onSelectCountry = (country) => {
     setCountryCode(country.cca2);
@@ -80,7 +80,7 @@ const RegistrationScreen = () => {
       return;
     }
 
-    if (!validatePhoneNumber(phoneNumber)) {
+    if (!validatePhoneNumber()) {
       Alert.alert('Validation Error', 'Please enter a valid phone number.');
       return;
     }
@@ -134,7 +134,10 @@ const RegistrationScreen = () => {
       setIsLoading(false);
       Alert.alert('Registration Successful', 'A verification email has been sent to your email address.');
 
-      navigation.navigate('Dashboard');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Dashboard' }],
+      });
     } catch (error) {
       setIsLoading(false);
       Alert.alert('Registration Failed', error.message);
@@ -166,17 +169,32 @@ const RegistrationScreen = () => {
     navigation.navigate('Login')
   }
 
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
   const spinValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.loop(
-      Animated.timing(spinValue, {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 10000, // 10 seconds for a full rotation
+        duration: 1000,
         useNativeDriver: true,
-      })
-    ).start();
-  }, [spinValue]);
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        tension: 20,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+      Animated.loop(
+        Animated.timing(spinValue, {
+          toValue: 1,
+          duration: 10000,
+          useNativeDriver: true,
+        })
+      )
+    ]).start();
+  }, []);
 
   const spin = spinValue.interpolate({
     inputRange: [0, 1],
@@ -184,108 +202,153 @@ const RegistrationScreen = () => {
   });
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior="padding">
-      <Animated.Image
-        source={require('../images/logo2.png')}
-        style={[styles.logo, { transform: [{ rotate: spin }] }]}
-      />
-      <View style={styles.innerContainer}>
-        <Text style={styles.title}>Create account</Text>
-        <Text style={styles.subtitle}>Welcome! Please enter your details.</Text>
-        <View style={styles.inputBox}>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your first name"
-            value={firstName}
-            onChangeText={setFirstName}
-          />
-        </View>
-        <View style={styles.inputBox}>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter a valid email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
-        <View style={styles.inputBox}>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter a password"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-          />
-          <TouchableOpacity onPress={toggleShowPassword} style={styles.iconContainer}>
-            <MaterialCommunityIcons
-              name={showPassword ? 'eye-off' : 'eye'}
-              size={24}
-              color="#aaa"
-            />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.inputBox}>
-          <TextInput
-            style={styles.input}
-            placeholder="Confirm password"
-            secureTextEntry={!showConfirmation}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-          />
-          <TouchableOpacity onPress={toggleConfirm} style={styles.iconContainer}>
-            <MaterialCommunityIcons
-              name={showConfirmation ? 'eye-off' : 'eye'}
-              size={24}
-              color="#aaa"
-            />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.inputBox}>
-        {/* <Text style={styles.text}>Phone:</Text> */}
-          <PhoneInput
-            initialValue={phoneNumber || '+254'}
-            value={phoneNumber}
-            onChangePhoneNumber={(number) => setPhoneNumber(number)}
-            onPressFlag={toggleCountryPicker}
-            style={styles.phoneInput}
-          />
-        </View>
-        <View style={styles.inputBox}>
-          <DropDownPicker
-            open={open}
-            value={role}
-            items={items}
-            setOpen={setOpen}
-            setValue={setRole}
-            setItems={setItems}
-            style={styles.picker}
-            placeholder="--Select role--"
-            dropDownContainerStyle={styles.dropdownContainerStyle}
-          />
-        </View>
-        <Text style={styles.loginText}>Already have an account? <Text style={styles.loginLink} onPress={gotoLogin}>Login</Text></Text>
-      </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.registerBtn} 
-          onPress={handleRegistration}
-          disabled={isLoading}
+    <LinearGradient
+      colors={['#4c669f', '#3b5998', '#192f6a']}
+      style={styles.container}
+    >
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"} 
+        style={styles.keyboardAvoidingView}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollViewContent}
+          showsVerticalScrollIndicator={false}
         >
-          {isLoading ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.registerBtnText}>Register</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+          <Animated.View style={[
+            styles.innerContainer,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            }
+          ]}>
+            <Animated.Image 
+              source={require('../images/logo2.png')} 
+              style={[
+                styles.logo,
+                { transform: [{ rotate: spin }] }
+              ]} 
+            />
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>Join Student-Sphere today!</Text>
+
+            <View style={styles.inputBox}>
+              <MaterialCommunityIcons name="account" size={24} color="#fff" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="First Name"
+                placeholderTextColor="#ccc"
+                value={firstName}
+                onChangeText={setFirstName}
+              />
+            </View>
+
+            <View style={styles.inputBox}>
+              <MaterialCommunityIcons name="email" size={24} color="#fff" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                placeholderTextColor="#ccc"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.inputBox}>
+              <MaterialCommunityIcons name="lock" size={24} color="#fff" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                placeholderTextColor="#ccc"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity onPress={toggleShowPassword} style={styles.iconContainer}>
+                <MaterialCommunityIcons
+                  name={showPassword ? 'eye-off' : 'eye'}
+                  size={24}
+                  color="#fff"
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputBox}>
+              <MaterialCommunityIcons name="lock-check" size={24} color="#fff" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Confirm Password"
+                placeholderTextColor="#ccc"
+                secureTextEntry={!showConfirmation}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+              />
+              <TouchableOpacity onPress={() => setShowConfirm(!showConfirmation)} style={styles.iconContainer}>
+                <MaterialCommunityIcons
+                  name={showConfirmation ? 'eye-off' : 'eye'}
+                  size={24}
+                  color="#fff"
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputBox}>
+              <MaterialCommunityIcons name="phone" size={24} color="#fff" style={styles.inputIcon} />
+              <PhoneInput
+                ref={phoneInput}
+                initialCountry="us"
+                onChangePhoneNumber={setPhoneNumber}
+                textProps={{
+                  placeholder: 'Phone Number',
+                  placeholderTextColor: '#ccc',
+                }}
+                textStyle={styles.phoneInputText}
+                style={styles.phoneInput}
+              />
+            </View>
+
+            <View style={styles.inputBox}>
+              <MaterialCommunityIcons name="account-group" size={24} color="#fff" style={styles.inputIcon} />
+              <DropDownPicker
+                open={open}
+                value={role}
+                items={items}
+                setOpen={setOpen}
+                setValue={setRole}
+                setItems={setItems}
+                style={styles.picker}
+                dropDownContainerStyle={styles.dropdownContainerStyle}
+                placeholder="Select Role"
+                placeholderStyle={styles.placeholderStyle}
+                labelStyle={styles.labelStyle}
+              />
+            </View>
+
+            <TouchableOpacity 
+              style={styles.registerBtn} 
+              onPress={handleRegistration}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.registerBtnText}>Register</Text>
+              )}
+            </TouchableOpacity>
+
+            <Text style={styles.loginText}>
+              Already have an account? <Text style={styles.loginLink} onPress={gotoLogin}>Login</Text>
+            </Text>
+          </Animated.View>
+        </ScrollView>
+      </KeyboardAvoidingView>
       {isLoading && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#000" />
+          <ActivityIndicator size="large" color="#fff" />
         </View>
       )}
-    </KeyboardAvoidingView>
+    </LinearGradient>
   );
 };
 
@@ -294,24 +357,41 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+    width: '100%',
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
   },
   innerContainer: {
-    width: '100%',
+    width: '90%',
     maxWidth: 400,
-    paddingHorizontal: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#2E86C1',
+    color: '#fff',
+    marginBottom: 10,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 18,
-    color: '#666',
-    marginBottom: 20,
+    color: '#e0e0e0',
+    marginBottom: 30,
     textAlign: 'center',
   },
   inputBox: {
@@ -319,62 +399,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#fff',
+  },
+  inputIcon: {
+    marginRight: 10,
   },
   input: {
     flex: 1,
     height: 50,
-    paddingHorizontal: 15,
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    color: '#fff',
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#ccc',
   },
   iconContainer: {
-    position: 'absolute',
-    right: 10,
+    padding: 10,
   },
   phoneInput: {
     flex: 1,
     height: 50,
-    paddingHorizontal: 15,
-    backgroundColor: '#fff',
-    borderRadius: 10,
+  },
+  phoneInputText: {
+    color: '#fff',
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    marginBottom: 20,
   },
   picker: {
     flex: 1,
     height: 50,
-    paddingHorizontal: 15,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    backgroundColor: 'transparent',
+    borderWidth: 0,
   },
   dropdownContainerStyle: {
-    marginTop: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderWidth: 0,
   },
-  buttonContainer: {
-    position: 'absolute',
-    bottom: 0,
-    width: '105%',
-    backgroundColor: '#2E86C1',
-    paddingVertical: 20,
-    alignItems: 'center',
-    borderRadius: 30,
+  placeholderStyle: {
+    color: '#ccc',
+  },
+  labelStyle: {
+    color: '#fff',
   },
   registerBtn: {
-    width: '75%',
+    width: '100%',
+    backgroundColor: '#2E86C1',
     paddingVertical: 15,
-    backgroundColor: '#000',
-    borderRadius: 10,
+    borderRadius: 25,
     alignItems: 'center',
+    marginTop: 20,
     marginBottom: 20,
-    elevation: 3,
   },
   registerBtnText: {
     color: '#fff',
@@ -382,33 +453,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   loginText: {
-    marginTop: 20,
     fontSize: 16,
-    color: '#555',
+    color: '#e0e0e0',
     textAlign: 'center',
-    marginBottom: 100,
+    marginBottom: 20,
   },
   loginLink: {
-    color: '#007bff',
+    color: '#2E86C1',
     fontWeight: 'bold',
   },
   loadingOverlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  logo: {
-    position: 'absolute',
-    width: 200,
-    height: 200,
-    opacity: 0.1,
-    transform: [{ translateX: -100 }, { translateY: -100 }],
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
 export default RegistrationScreen;
+
+
+
+
