@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
+import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator, Image, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { auth, db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import PhoneInput from 'react-native-phone-input';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Icon } from 'react-native-elements';
 
 const EditProfile = () => {
   const [firstName, setFirstName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const validatePhoneNumber = (number) => {
-    const phoneNumberPattern = /^\+[1-9]{1}[0-9]{3,14}$/;
-    return phoneNumberPattern.test(number);
-  };
+  const navigation = useNavigation();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (authUser) => {
@@ -27,12 +27,11 @@ const EditProfile = () => {
 
     return unsubscribe;
   }, []);
-  const navigation = useNavigation();
-  const GoToResetPwd = () => {
-    /* Navigate to the Reset password screen when the "Go to Reset Password" button is pressed */
-    navigation.navigate('Reset password');
-  };
 
+  const validatePhoneNumber = (number) => {
+    const phoneNumberPattern = /^\+[1-9]{1}[0-9]{3,14}$/;
+    return phoneNumberPattern.test(number);
+  };
 
   const handleUpdate = async () => {
     if (!firstName) {
@@ -50,6 +49,7 @@ const EditProfile = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
       await updateDoc(doc(db, 'users', user.uid), {
         firstName: firstName,
@@ -60,119 +60,157 @@ const EditProfile = () => {
     } catch (error) {
       Alert.alert('Update Failed', error.message);
       console.log('Update failed:', error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const GoToResetPwd = () => {
+    navigation.navigate('Reset password');
+  };
+
   return (
-    <KeyboardAvoidingView style={styles.container} behavior='padding'>
-      <View style={styles.container}>
-        <Text style={styles.title}>Edit profile</Text>
+    <LinearGradient
+      colors={['#4c669f', '#3b5998', '#192f6a']}
+      style={styles.container}
+    >
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.innerContainer}
+      >
+        <Image
+          source={require('../images/logo2.png')}
+          style={styles.logo}
+        />
+        <Text style={styles.title}>Edit Profile</Text>
 
         <View style={styles.inputBox}>
+          <Icon name="person" type="material" color="#fff" size={24} style={styles.inputIcon} />
           <TextInput
             style={styles.input}
             placeholder="Enter your first name"
+            placeholderTextColor="#bbb"
             value={firstName}
             onChangeText={setFirstName}
           />
         </View>
+
         <View style={styles.inputBox}>
-          <Text style={styles.text}>Phone:</Text>
+          <Icon name="phone" type="material" color="#fff" size={24} style={styles.inputIcon} />
           <PhoneInput
             placeholder="Input phone number"
+            placeholderTextColor="#bbb"
             value={phoneNumber}
             onChangePhoneNumber={(number) => setPhoneNumber(number)}
             style={styles.phoneInput}
+            textStyle={styles.phoneInputText}
           />
         </View>
 
-
-        <TouchableOpacity style={styles.editBtn} onPress={handleUpdate}>
-          <Text style={styles.editbtnText}>Update</Text>
+        <TouchableOpacity 
+          style={styles.updateBtn} 
+          onPress={handleUpdate}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.updateBtnText}>Update Profile</Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.navBtn}
+          style={styles.resetPwdBtn}
           onPress={GoToResetPwd}
         >
-          <Text style={styles.navBtnText}>Go to Reset Password</Text>
+          <Text style={styles.resetPwdBtnText}>Reset Password</Text>
         </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#fff" />
+        </View>
+      )}
+    </LinearGradient>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  innerContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    padding: 20,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 30,
   },
   title: {
-    fontSize: 40,
+    fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  input: {
-    flex: 1,
-    height: 40,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    fontSize: 15,
-    backgroundColor: 'lightgray',
-    color: 'black',
-    borderWidth: 0,
+    color: '#fff',
+    marginBottom: 30,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: {width: -1, height: 1},
+    textShadowRadius: 10
   },
   inputBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
-    width: '80%',
-    backgroundColor: 'lightgray',
-    borderRadius: 5,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 10,
     marginBottom: 20,
-    zIndex: 1,
+    paddingHorizontal: 10,
   },
-  editBtn: {
-    width: 300,
-    padding: 10,
-    backgroundColor: 'black',
-    borderRadius: 15,
-    alignItems: 'center',
-    marginTop: 10,
-    zIndex: 0, // Ensure the zIndex of the button is lower
+  inputIcon: {
+    marginRight: 10,
   },
-  editbtnText: {
-    color: 'white',
-    fontSize: 20,
+  input: {
+    flex: 1,
+    height: 50,
+    color: '#fff',
+    fontSize: 16,
   },
   phoneInput: {
-    height: 40,
-    width: '83%',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    paddingHorizontal: 5,
+    flex: 1,
+    height: 50,
   },
-  text: {
-    marginLeft: 10,
-    color: 'darkgray',
+  phoneInputText: {
+    fontSize: 16,
+    color: '#fff',
   },
-  navBtn: {
+  updateBtn: {
+    backgroundColor: '#2ECC71',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 25,
     marginTop: 20,
-    padding: 10,
-    backgroundColor: '#007bff',
-    borderRadius: 15,
+  },
+  updateBtnText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  resetPwdBtn: {
+    marginTop: 20,
+  },
+  resetPwdBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    textDecorationLine: 'underline',
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  navBtnText: {
-    color: 'white',
-    fontSize: 20,
-  },
-
 });
 
 export default EditProfile;

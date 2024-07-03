@@ -1,96 +1,281 @@
-import React,{useEffect, useState,useCallback} from 'react';
-import { View, Text, Button, StyleSheet, Alert, Touchable, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Animated, SafeAreaView, StatusBar } from 'react-native';
 import { auth } from '../firebase';
-import { signOut } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Icon } from 'react-native-elements';
+import { LinearGradient } from 'expo-linear-gradient';
+import ProfileScreen from './ProfileScreen';
+import Announcements from './Announcements';
+import Units from './Units';
+import TaskScreen from './taskscreen';
+import TableOptions from './TableOptions';
+import Requests from './Request';
+import Analytics from './Analytics';
+
 
 const db = getFirestore();
+const Tab = createBottomTabNavigator();
+
+// Add this array of motivational quotes
+const motivationalQuotes = [
+  "Believe you can and you're halfway there.",
+  "The secret of getting ahead is getting started.",
+  "It always seems impossible until it's done.",
+  "Don't watch the clock; do what it does. Keep going.",
+  "The future belongs to those who believe in the beauty of their dreams.",
+  "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+  "Your time is limited, don't waste it living someone else's life.",
+  "The only way to do great work is to love what you do.",
+  "Education is the most powerful weapon which you can use to change the world.",
+  "The best way to predict your future is to create it.",
+];
 
 const DashboardScreen = () => {
-  /* State variable to store the user's first name */
   const [firstName, setFirstName] = useState('');
+  const [role, setRole] = useState('');
   const navigation = useNavigation();
+  const spinValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    /* Fetch the user's name from Firestore when the component mounts */
-    const fetchUserName = async () => {
-      const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
-      if (userDoc.exists()) {
-        /* Set the state with the fetched first name */
-        setFirstName(userDoc.data().firstName);
+    const fetchUserData = async () => {
+      const userDocRef = doc(db, 'users', auth.currentUser.uid);
+      const docSnap = await getDoc(userDocRef);
+
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        setFirstName(userData.firstName);
+        setRole(userData.role); 
       } else {
-        console.log("No such document!");
+        console.log('No such document!');
       }
     };
 
-    fetchUserName();
+    fetchUserData();
   }, []);
 
-  const GoToProfile=()=>{
-    /* Navigate to the Profile screen when the "Go to profile" button is pressed */
-    navigation.navigate('Profile screen')
-  }
-
-  const GoToAnnounce=()=>{
-    navigation.navigate('Announcements')
-  }
-
-  const GoToUnits=()=>{
-    navigation.navigate('Units')
-  }
-
-  const handleSignout = () => {
-    /* Handle sign-out functionality */
-    signOut(auth)
-      .then(() => {
-        Alert.alert('Logout Successful');
-        console.log('Successful logout')
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Home' }],
-        });
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(spinValue, {
+        toValue: 1,
+        duration: 10000,
+        useNativeDriver: true,
       })
-      .catch((error) => {
-        Alert.alert('Logout Failed', error.message);
-      });
-  };
+    ).start();
+  }, [spinValue]);
 
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const HomeScreen = () => {
+    const [upcomingDeadlines, setUpcomingDeadlines] = useState([]);
+    const [recentAnnouncements, setRecentAnnouncements] = useState([]);
+    const [quickAccess, setQuickAccess] = useState([]);
+    const [taskListPreview, setTaskListPreview] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [quote, setQuote] = useState('');
+
+    useEffect(() => {
+      const fetchData = async () => {
+        setLoading(true);
+        try {
+          // Fetch upcoming deadlines
+          const deadlinesQuery = query(collection(db, 'Tasks'), where('userId', '==', auth.currentUser.uid));
+          const deadlinesSnapshot = await getDocs(deadlinesQuery);
+          const deadlines = deadlinesSnapshot.docs.map(doc => doc.data());
+          setUpcomingDeadlines(deadlines);
+
+          // Fetch recent announcements
+          const announcementsQuery = query(collection(db, 'Announcements'), where('Type', '==', 'General'));
+          const announcementsSnapshot = await getDocs(announcementsQuery);
+          const announcements = announcementsSnapshot.docs.map(doc => doc.data());
+          setRecentAnnouncements(announcements);
+
+          // Fetch quick access resources (example: most used units)
+          const unitsQuery = query(collection(db, 'Units'), where('userId', '==', auth.currentUser.uid));
+          const unitsSnapshot = await getDocs(unitsQuery);
+          const units = unitsSnapshot.docs.map(doc => doc.data());
+          setQuickAccess(units);
+
+          // Fetch task list preview
+          const tasksQuery = query(collection(db, 'Tasks'), where('userId', '==', auth.currentUser.uid));
+          const tasksSnapshot = await getDocs(tasksQuery);
+          const tasks = tasksSnapshot.docs.map(doc => doc.data());
+          setTaskListPreview(tasks);
+
+          // Set a random quote
+          const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
+          setQuote(motivationalQuotes[randomIndex]);
+        } catch (error) {
+          console.error("Error fetching data: ", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchData();
+    }, []);
+
+    const renderGhostWidget = () => (
+      <TouchableOpacity style={styles.widget}>
+        <LinearGradient
+          colors={['#4b7bec', '#3867d6']}
+          style={styles.widgetGradient}
+        >
+          <View style={styles.ghostIcon} />
+          <View style={styles.ghostTitle} />
+          <View style={styles.ghostText} />
+          <View style={styles.ghostText} />
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <LinearGradient
+          colors={['#4c669f', '#3b5998', '#192f6a']}
+          style={styles.gradientBackground}
+        >
+          <View style={styles.headerContainer}>
+            <Text style={styles.welcomeText}>Welcome, {firstName}</Text>
+            <Text style={styles.quoteText}>{quote || 'Loading...'}</Text>
+          </View>
+          <Animated.Image
+            source={require('../images/logo2.png')}
+            style={[styles.logoWatermark, { transform: [{ rotate: spin }] }]}
+          />
+          <FlatList
+            data={[
+              { key: 'Upcoming Deadlines', icon: 'calendar-clock', data: upcomingDeadlines },
+              { key: 'Recent Announcements', icon: 'message-alert', data: recentAnnouncements },
+              { key: 'Quick Access', icon: 'rocket-launch', data: quickAccess },
+              { key: 'Task List Preview', icon: 'clipboard-list', data: taskListPreview },
+            ]}
+            renderItem={({ item }) => (
+              loading ? renderGhostWidget() : (
+                <TouchableOpacity style={styles.widget}>
+                  <LinearGradient
+                    colors={['#4b7bec', '#3867d6']}
+                    style={styles.widgetGradient}
+                  >
+                    <Icon name={item.icon} type='material-community' size={40} color='#fff' />
+                    <Text style={styles.widgetText}>{item.key}</Text>
+                    {item.data.length > 0 ? (
+                      item.data.map((dataItem, index) => (
+                        <Text key={index} style={styles.widgetDataText}>{dataItem.title || dataItem.name}</Text>
+                      ))
+                    ) : (
+                      <Text style={styles.widgetDataText}>No data available</Text>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+              )
+            )}
+            numColumns={2}
+            keyExtractor={(item) => item.key}
+            contentContainerStyle={styles.flatListContainer}
+          />
+        </LinearGradient>
+      </SafeAreaView>
+    );
+  };
 
   return (
     <View style={styles.container}>
-
-      <View style={styles.greeting}>
-        <Text style={styles.welcomeTxt}>Welcome back, {firstName}</Text>
-        {/* <Text>Email: {auth.currentUser?.email}</Text> */}
-      </View>
-
-      <View style={styles.profileContainer}>
-        <TouchableOpacity style={styles.profile} onPress={GoToProfile}>
-            <Icon style={styles.icon} size={65} color='#fff' name='account' type='material-community'></Icon>
-            <Text style={styles.profileTxt}>Profile</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.profile} onPress={GoToAnnounce}>
-            <Icon style={styles.icon} size={65} color='#fff'  name='message-alert-outline' type='material-community'></Icon>
-            <Text style={styles.profileTxt} onPress={GoToAnnounce}>Announcements</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.profile} onPress={GoToUnits}>
-            <Icon style={styles.icon} size={65} color='#fff'  name='book-open-page-variant-outline' type='material-community'></Icon>
-            <Text style={styles.profileTxt} onPress={GoToUnits}>Units</Text>
-          </TouchableOpacity>
-         
-          <TouchableOpacity style={styles.profile} onPress={() => navigation.navigate('Task Screen')}>
-            <Icon style={styles.icon} size={65} color='black'  name='clock-time-eight' type='material-community'></Icon>
-            <Text style={styles.profileTxt}>Tasks</Text>
-          </TouchableOpacity>
-      </View>  
-      
-      <TouchableOpacity style={styles.logout} onPress={handleSignout}>
-
-          <Text style={styles.logoutTxt}>Logout</Text>
-      </TouchableOpacity>
-      
+      <StatusBar barStyle="light-content" />
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: styles.tabBar,
+          tabBarActiveTintColor: '#4b7bec',
+          tabBarInactiveTintColor: '#95a5a6',
+        }}
+      >
+        <Tab.Screen 
+          name="Home" 
+          component={HomeScreen} 
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Icon name='home' type='material-community' color={color} size={size} />
+            ),
+          }}
+        />
+        <Tab.Screen 
+          name="Announcements" 
+          component={Announcements} 
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Icon name='message-alert-outline' type='material-community' color={color} size={size} />
+            ),
+          }}
+        />
+        {role === 'admin' ? (
+          <>
+          <Tab.Screen 
+            name="Tables" 
+            component={TableOptions} 
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <Icon name='table-multiple' type='material-community' color={color} size={size} />
+              ),
+            }}
+          />
+          <Tab.Screen 
+            name="Requests" 
+            component={Requests} 
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <Icon name='account-lock-open' type='material-community' color={color} size={size} />
+              ),
+              title: 'Requests',
+            }}
+          />
+          <Tab.Screen 
+            name="Analytics" 
+            component={Analytics} 
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <Icon name='google-analytics' type='material-community' color={color} size={size} />
+              ),
+              title: 'Analytics',
+            }}
+          />
+          </>
+        ) : (
+          <>
+            <Tab.Screen 
+              name="Units" 
+              component={Units} 
+              options={{
+                tabBarIcon: ({ color, size }) => (
+                  <Icon name='book-open-page-variant-outline' type='material-community' color={color} size={size} />
+                ),
+              }}
+            />
+            <Tab.Screen 
+              name="Tasks" 
+              component={TaskScreen} 
+              options={{
+                tabBarIcon: ({ color, size }) => (
+                  <Icon name='clock-time-eight' type='material-community' color={color} size={size} />
+                ),
+              }}
+            />
+          </>
+        )}
+        <Tab.Screen 
+          name="Profile" 
+          component={ProfileScreen} 
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Icon name='account' type='material-community' color={color} size={size} />
+            ),
+          }}
+        />
+      </Tab.Navigator>
     </View>
   );
 };
@@ -98,68 +283,110 @@ const DashboardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f0f4f7',
+  },
+  safeArea: {
+    flex: 1,
+  },
+  gradientBackground: {
+    flex: 1,
+  },
+  headerContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f0f4f7',
-    paddingHorizontal: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 15,
   },
-  greeting: {
-    marginBottom: 20,
-  },
-  profileContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    width: '100%',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  profile: {
-    width: '45%',
-    height: 150,
-    padding: 20,
-    backgroundColor: '#4b7bec',
-    borderRadius: 15,
-    alignItems: 'center',
-    marginVertical: 10,
-    justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  profileTxt: {
+  welcomeText: {
+    fontSize: 28,
     fontWeight: 'bold',
-    fontSize: 16,
     color: '#fff',
-  },
-  title: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  welcomeTxt: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#333',
-  },
-  logout: {
-    width: '80%',
-    padding: 15,
-    backgroundColor: '#fc5c65',
-    borderRadius: 10,
-    alignItems: 'center',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: -1, height: 1 },
+    textShadowRadius: 10,
+    marginBottom: 10,
     marginTop: 20,
+  },
+  quoteText: {
+    fontSize: 16,
+    fontStyle: 'italic',
+    color: '#fff',
+    textAlign: 'center',
+    opacity: 0.8,
+  },
+  logoWatermark: {
     position: 'absolute',
-    bottom: 30,
+    width: 200,
+    height: 200,
+    opacity: 0.1,
+    alignSelf: 'center',
+    top: '50%',
+    marginTop: -100, // Half of the height to center it vertically
   },
-  logoutTxt: {
+  flatListContainer: {
+    paddingHorizontal: 10,
+    paddingTop: 20, // Add some top padding to separate from the welcome message
+  },
+  widget: {
+    flex: 1,
+    margin: 8,
+    borderRadius: 15,
+    overflow: 'hidden',
+  },
+  widgetGradient: {
+    padding: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 180,
+  },
+  widgetText: {
+    fontSize: 18,
     fontWeight: 'bold',
-    fontSize: 16,
     color: '#fff',
+    marginTop: 10,
+    marginBottom: 5,
+    textAlign: 'center',
   },
-  
-
+  widgetDataText: {
+    fontSize: 14,
+    color: '#fff',
+    textAlign: 'center',
+  },
+  ghostIcon: {
+    width: 40,
+    height: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 20,
+    marginBottom: 10,
+  },
+  ghostTitle: {
+    width: '70%',
+    height: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 4,
+    marginBottom: 10,
+  },
+  ghostText: {
+    width: '90%',
+    height: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 4,
+    marginBottom: 5,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tabBar: {
+    backgroundColor: '#fff',
+    borderTopWidth: 0,
+    elevation: 10,
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+  },
 });
 
 export default DashboardScreen;
+
