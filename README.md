@@ -16,13 +16,20 @@
 cd folder_of_your_choice/
 git clone https://github.com/SMK-008/Student-Sphere.git
 ```
-## 2) Start the server
+
+## 2) Install packages and dependencies
+```
+cd main-project/
+npm i or npm install
+```
+
+## 3) Start the server
 ```
 cd main-project/
 npx expo start
 ```
 - In the terminal,the output will show a list of commands and a QR code.
-## 3) Opening app on mobile device
+## 4) Opening app on mobile device
 ### i)Scanning
 - Open your phones camera app and scan the QR code.
 ### ii) Open emulator through terminal
@@ -30,7 +37,7 @@ npx expo start
 - Click "I" on the terminal.
 #### b) Android
 - Click "a" on the terminal
-## 4) End server
+## 5) End server
 - Click "Ctrl + C" on the terminal
 
 
@@ -47,23 +54,19 @@ npx expo start
 
 ## Examples
 - Add a task: Login as a student and navigate to Tasks tab.
-- View user tables: Login as admin and navigate to tables tab
+- Modify user tables: Login as admin and navigate to Tables tab
 ## Input/Output
 ### Input
-- The application takes in multiple types of inputs depending on the different modules:
-##### Authentication Module
-Takes in user's name,password,user's role and phone number.
-##### Task management module
-Takes in deadline,task weight,title and description.
-##### Announcement's module
-Takes in images,description and URL.
-##### Unit's module
-Takes in File,description text,Title text.
-
+#### 1) Task
+- The user can create a task and set its deadline and priority
+#### 2) Modify users table
+- The user can login as an admin and view the student's and teacher's tables.From here they can help student's and teacher's be able to access their content by giving them an id.
 ### Output
-- The authentication module's output is access to the user's account and application features
-- The unit's module's output involves downloading files posted.
-- The task management module is the user being able to manage their time 
+#### 1) Task
+The user will get sent notification that they are nearing the deadline of the task.The frequency of the notification increases the closer they get to the deadline
+
+#### 2) Modify user's table
+The Teachers and students can now access the content as the access to the content is dependent on their id.
 # Project Structure
 
 ```
