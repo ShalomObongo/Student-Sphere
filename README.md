@@ -1,5 +1,4 @@
-# Project Title 
- ##  Student-Sphere:A mobile application that aggregates student learning activities
+#  Student-Sphere:A mobile application that aggregates student learning activities
 # Project Description
 - This is a mobile student companion application that aggregates student learning activities.Its aim is to make access to learning resources easier and to enhance student's time management by providing a student-based task manager and reduce time wastage by aggregating student resources.
 
@@ -47,7 +46,8 @@ npx expo start
  To close the server,Type CTRL + C.
 
 ## Examples
-
+- Add a task: Login as a student and navigate to Tasks tab.
+- View user tables: Login as admin and navigate to tables tab
 ## Input/Output
 ### Input
 - The application takes in multiple types of inputs depending on the different modules:
@@ -83,3 +83,10 @@ Student-Sphere/
 ```
 ## License
 MIT
+
+
+# Acknowledgement
+- [React Native documentation](https://reactnative.dev/docs/getting-started)
+- [Firebase documentation](https://firebase.google.com/docs)
+- [Expo documentation](https://docs.expo.dev/)
+- [Expo Go](https://expo.dev/go)
