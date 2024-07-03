@@ -193,7 +193,7 @@ const DashboardScreen = () => {
               tabBarIcon: ({ color, size }) => (
                 <Icon name='account-lock-open' type='material-community' color={color} size={size} />
               ),
-              title: 'Tables',
+              title: 'Requests',
             }}
           />
           </>

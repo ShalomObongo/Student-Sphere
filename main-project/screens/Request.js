@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { Icon } from 'react-native-elements';
+import { useNavigation } from "@react-navigation/native";
 
 const db = getFirestore();
 
 const Requests = () => {
   const [requests, setRequests] = useState([]);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -22,12 +24,17 @@ const Requests = () => {
     fetchRequests();
   }, []);
 
+  const gotoRequest = (requestId) => {
+    navigation.navigate('Process ID Request', { Request_ID: requestId });
+  };
+
   const renderItem = ({ item }) => (
     <View style={styles.requestItem}>
-      <TouchableOpacity style={styles.touchable}>
+      <TouchableOpacity style={styles.touchable} onPress={() => gotoRequest(item.id)}>
         <View style={styles.textContainer}>
           <Text style={styles.requestName}>{item.Name}</Text>
           <Text style={styles.requestDescription}>{item.Description}</Text>
+          <Text style={styles.requestDescription}>Request ID:{item.Request_ID}</Text>
         </View>
         <Icon name="arrow-right-circle" type="material-community" color="#4b7bec" size={30} />
       </TouchableOpacity>
