@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, View, Text, TouchableOpacity, Alert, ImageBackground } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, ImageBackground } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { auth } from '../firebase';
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
 import { signOut } from 'firebase/auth';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { LinearGradient } from 'expo-linear-gradient';
+import PhoneInput from 'react-native-phone-input';
 
 const db = getFirestore();
 
@@ -16,6 +17,9 @@ const ProfileScreen = () => {
     const [email, setEmail] = useState('');
     const [phoneNumber, setNumber] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
+    const [emailInput, setEmailInput] = useState('');
+    const [numberInput, setNumberInput] = useState('');
 
     const fetchUserDetails = useCallback(async () => {
         if (auth.currentUser) {
@@ -28,6 +32,8 @@ const ProfileScreen = () => {
                     setEmail(userData.email);
                     setRole(userData.role);
                     setNumber(userData.phoneNumber);
+                    setEmailInput(userData.email);
+                    setNumberInput(userData.phoneNumber);
                 } else {
                     console.log("No such document!");
                 }
@@ -85,8 +91,34 @@ const ProfileScreen = () => {
         }
     };
 
+    const toggleEditMode = () => {
+        setIsEditing(!isEditing);
+        if(!isEditing){
+            setEmailInput(email);
+            setNumberInput(phoneNumber)
+
+        }
+    };
+
+    const saveChanges = async () => {
+        try {
+            const userDocRef = doc(db, "users", auth.currentUser.uid);
+            await updateDoc(userDocRef, {
+                email: emailInput,
+                phoneNumber: numberInput,
+            });
+            setEmail(emailInput);
+            setNumber(numberInput);
+            setIsEditing(false);
+            Alert.alert("Profile updated successfully!");
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            Alert.alert("Error updating profile. Please try again.");
+        }
+    };
+
     const gotoEdit = () => {
-        navigation.navigate('Edit Profile');
+        navigation.navigate('Reset password');
     };
 
     const gotoTasks = () => {
@@ -157,17 +189,52 @@ const ProfileScreen = () => {
                         <View style={styles.infoContainer}>
                             <View style={styles.infoItem}>
                                 <Icon name="email" size={24} color="#007BFF" />
-                                <Text style={styles.infoText}>{email}</Text>
+                                {isEditing ? (
+                                    <TextInput
+                                        style={styles.infoTextInput}
+                                        value={emailInput}
+                                        onChangeText={setEmailInput}
+                                        keyboardType="email-address"
+                                        autoCapitalize="none"
+                                    />
+                                ) : (
+                                    <Text style={styles.infoText}>{email}</Text>
+                                )}
                             </View>
                             <View style={styles.infoItem}>
                                 <Icon name="phone" size={24} color="#28A745" />
-                                <Text style={styles.infoText}>{phoneNumber}</Text>
+                                {isEditing ? (
+                                    <PhoneInput
+                                        placeholder="Input phone number"
+                                        value={numberInput}
+                                        onChangePhoneNumber={(number) => setNumberInput(number)}
+                                        style={styles.phoneInput}
+                                        textStyle={styles.phoneInputText}
+                                    />
+                                ) : (
+                                    <Text style={styles.infoText}>{phoneNumber}</Text>
+                                )}
+                            </View>
+                            <View style={styles.editButtonContainer}>
+                                {isEditing ? (
+                                    <>
+                                        <ProfileButton icon="save" title="Save" onPress={saveChanges} color="#28A745" />
+                                        <ProfileButton icon="cancel" title="Cancel" onPress={toggleEditMode} color="#DC3545" />
+                                    </>
+                                ) : (
+                                    <ProfileButton icon="edit" title="Edit" onPress={toggleEditMode} color="#FFC107" />
+                                )}
                             </View>
                         </View>
                         <View style={styles.profileNavigation}>
+                            {role==='student' && (
+                            <>
                             <ProfileButton icon="assignment" title="View Tasks" onPress={gotoTasks} color="#007BFF" />
                             <ProfileButton icon="school" title="View Units" onPress={gotoUnits} color="#28A745" />
-                            <ProfileButton icon="edit" title="Edit Profile" onPress={gotoEdit} color="#FFC107" />
+                            </>
+                            )}
+                            
+                            <ProfileButton icon="edit" title="Reset Password" onPress={gotoEdit} color="#FFC107" />
                             <ProfileButton icon="exit-to-app" title="Logout" onPress={handleSignout} color="#DC3545" />
                         </View>
                     </View>
@@ -236,6 +303,22 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#333',
     },
+    infoTextInput: {
+        marginLeft: 15,
+        fontSize: 16,
+        color: '#333',
+        borderBottomWidth: 1,
+        borderColor: '#ccc',
+        flex: 1,
+    },
+    phoneInput: {
+        flex: 1,
+        height: 50,
+    },
+    phoneInputText: {
+        fontSize: 16,
+        color: '#333',
+    },
     profileNavigation: {
         padding: 20,
     },
@@ -289,6 +372,10 @@ const styles = StyleSheet.create({
     },
     ghostProfileButton: {
         backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    },
+    editButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
     },
 });
 
