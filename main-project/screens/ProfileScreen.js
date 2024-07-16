@@ -128,6 +128,9 @@ const ProfileScreen = () => {
     const gotoUnits = () => {
         navigation.navigate('Units');
     };
+    const gotoRecommend=()=>{
+        navigation.navigate('AddRecommendation');
+    }
 
     const ProfileButton = ({ icon, title, onPress, color }) => (
         <TouchableOpacity style={[styles.profileButton, { backgroundColor: color }]} onPress={onPress}>
@@ -182,7 +185,7 @@ const ProfileScreen = () => {
                             >
                                 <View style={styles.headerContent}>
                                     <Text style={styles.welcomeTxt}>Hello, {firstName}</Text>
-                                    <Text style={styles.roleTxt}>{role}</Text>
+                                    <Text style={styles.roleTxt}>Role: {role}</Text>
                                 </View>
                             </LinearGradient>
                         </ImageBackground>
@@ -231,6 +234,7 @@ const ProfileScreen = () => {
                             <>
                             <ProfileButton icon="assignment" title="View Tasks" onPress={gotoTasks} color="#007BFF" />
                             <ProfileButton icon="school" title="View Units" onPress={gotoUnits} color="#28A745" />
+                            {/* <ProfileButton icon="school" title="View Recommendations" onPress={gotoRecommend} color="#F27516" /> */}
                             </>
                             )}
                             

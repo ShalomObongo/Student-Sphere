@@ -98,6 +98,10 @@ const LoginScreen = () => {
     navigation.navigate('Registration');
   };
 
+  const gotoOTPScreen = () => {
+    navigation.navigate('Login with OTP');
+  };
+
   return (
     <ImageBackground
       source={require('../images/background.jpeg')}
@@ -178,6 +182,13 @@ const LoginScreen = () => {
                 ) : (
                   <Text style={styles.loginBtnText}>Login</Text>
                 )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.otpBtn}
+                onPress={gotoOTPScreen}
+              >
+                <Text style={styles.otpBtnText}>Login with OTP</Text>
               </TouchableOpacity>
 
               <View style={styles.signupContainer}>
@@ -291,6 +302,24 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   loginBtnText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  otpBtn: {
+    width: '100%',
+    backgroundColor: '#45B39D',
+    paddingVertical: 15,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  otpBtnText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',

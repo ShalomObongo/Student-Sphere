@@ -30,54 +30,55 @@ import ProcessRequest from './screens/ProcessRequest';
 import AddUnit from './screens/AddUnit';
 import Analytics from './screens/Analytics';
 import { Provider as PaperProvider } from 'react-native-paper';
+import AddRecommendation from './screens/addRecommendation';
+import OtpScreen from './screens/OTPScreen';
+// Notifications.setNotificationHandler({
+//     handleNotification: async () => ({
+//         shouldShowAlert: true,
+//         shouldPlaySound: false,
+//         shouldSetBadge: false,
+//     }),
+// });
 
-Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: false,
-        shouldSetBadge: false,
-    }),
-});
+// async function registerForPushNotificationsAsync() {
+//     let token;
+//     if (Constants.isDevice) {
+//         const { status: existingStatus } = await Notifications.getPermissionsAsync();
+//         let finalStatus = existingStatus;
+//         if (existingStatus !== 'granted') {
+//             const { status } = await Notifications.requestPermissionsAsync();
+//             finalStatus = status;
+//         }
+//         if (finalStatus !== 'granted') {
+//             alert('Failed to get push token for push notification!');
+//             return;
+//         }
+//         token = (await Notifications.getExpoPushTokenAsync()).data;
+//         console.log(token);
+//     } else {
+//         alert('Must use physical device for Push Notifications');
+//     }
 
-async function registerForPushNotificationsAsync() {
-    let token;
-    if (Constants.isDevice) {
-        const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
-        if (existingStatus !== 'granted') {
-            const { status } = await Notifications.requestPermissionsAsync();
-            finalStatus = status;
-        }
-        if (finalStatus !== 'granted') {
-            alert('Failed to get push token for push notification!');
-            return;
-        }
-        token = (await Notifications.getExpoPushTokenAsync()).data;
-        console.log(token);
-    } else {
-        alert('Must use physical device for Push Notifications');
-    }
+//     if (Platform.OS === 'android') {
+//         Notifications.setNotificationChannelAsync('default', {
+//             name: 'default',
+//             importance: Notifications.AndroidImportance.MAX,
+//             vibrationPattern: [0, 250, 250, 250],
+//             lightColor: '#FF231F7C',
+//         });
+//     }
 
-    if (Platform.OS === 'android') {
-        Notifications.setNotificationChannelAsync('default', {
-            name: 'default',
-            importance: Notifications.AndroidImportance.MAX,
-            vibrationPattern: [0, 250, 250, 250],
-            lightColor: '#FF231F7C',
-        });
-    }
-
-    return token;
-}
+//     return token;
+// }
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
     const [tasks, setTasks] = React.useState([]);
 
-    useEffect(() => {
-        registerForPushNotificationsAsync();
-    }, []);
+    // useEffect(() => {
+    //     registerForPushNotificationsAsync();
+    // }, []);
 
     return (
         <PaperProvider>
@@ -197,6 +198,16 @@ export default function App() {
                         name="Analytics"
                         component={Analytics}
                         options={{ title: 'Analytics' }}
+                    />
+                    <Stack.Screen
+                        name="AddRecommendation"
+                        component={AddRecommendation}
+                        options={{ title: 'Give Recommendation' }}
+                    />
+                    <Stack.Screen
+                        name="Login with OTP"
+                        component={OtpScreen}
+                        options={{ title: 'Login with OTP' }}
                     />
                 </Stack.Navigator>
             </NavigationContainer>

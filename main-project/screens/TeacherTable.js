@@ -187,11 +187,11 @@ const TeacherTable = () => {
                     <DataTable.Cell style={styles.actionCell}>
                       {editingIndex === index ? (
                         <View style={styles.actionButtons}>
-                          <Button mode="contained" onPress={() => handleSave(index)} style={styles.saveButton}>Save</Button>
+                          <Button mode="contained" title="Save" onPress={() => handleSave(index)} style={styles.saveButton}>Save</Button>
                           <Button mode="outlined" onPress={handleCancel} style={styles.cancelButton}>Cancel</Button>
                         </View>
                       ) : (
-                        <Button mode="contained" onPress={() => handleEdit(index)} style={styles.editButton}>Edit</Button>
+                        <Button mode="contained" title="Save" onPress={() => handleEdit(index)} style={styles.editButton}>Edit</Button>
                       )}
                     </DataTable.Cell>
                   </DataTable.Row>
