@@ -9,17 +9,17 @@ import {
   StyleSheet,
   ActivityIndicator,
   Animated,
-  Dimensions,
-  ImageBackground,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-
-const { width, height } = Dimensions.get('window');
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
+import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -28,8 +28,42 @@ const LoginScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(height)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
   const spinValue = useRef(new Animated.Value(0)).current;
+
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    expoClientId: '138270145629-v07v5rma51cjuualt4qlamh4k4sbgdqh.apps.googleusercontent.com',
+    iosClientId: '138270145629-6fmkl6me04nm1dspr8o5ghb23svo73ad.apps.googleusercontent.com',
+    androidClientId: '138270145629-v07v5rma51cjuualt4qlamh4k4sbgdqh.apps.googleusercontent.com',
+    webClientId: '138270145629-v07v5rma51cjuualt4qlamh4k4sbgdqh.apps.googleusercontent.com'
+  });
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { id_token } = response.params;
+      const credential = GoogleAuthProvider.credential(id_token);
+      signInWithCredential(auth, credential);
+    }
+  }, [response]);
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await promptAsync();
+      if (result?.type === 'success') {
+        const { id_token } = result.params;
+        const credential = GoogleAuthProvider.credential(id_token);
+        const userCredential = await signInWithCredential(auth, credential);
+        console.log('User signed in:', userCredential.user);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Dashboard' }],
+        });
+      }
+    } catch (error) {
+      console.error('Error during Google Sign-In:', error);
+      Alert.alert('Error', 'Failed to sign in with Google. Please try again.');
+    }
+  };
 
   useEffect(() => {
     Animated.parallel([
@@ -99,115 +133,114 @@ const LoginScreen = () => {
   };
 
   return (
-    <ImageBackground
-      source={require('../images/background.jpeg')}
-      style={styles.backgroundImage}
+    <LinearGradient
+      colors={['#4c669f', '#3b5998', '#192f6a']}
+      style={styles.container}
     >
-      <LinearGradient
-        colors={['rgba(76, 102, 159, 0.8)', 'rgba(59, 89, 152, 0.8)', 'rgba(25, 47, 106, 0.8)']}
-        style={styles.gradient}
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"} 
+        style={styles.keyboardAvoidingView}
       >
-        <KeyboardAvoidingView style={styles.container} behavior="padding">
-          <ScrollView contentContainerStyle={styles.scrollViewContent}>
-            <Animated.View
+        <ScrollView 
+          contentContainerStyle={styles.scrollViewContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <Animated.View style={[
+            styles.innerContainer,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            }
+          ]}>
+            <Animated.Image 
+              source={require('../images/logo2.png')} 
               style={[
-                styles.innerContainer,
-                {
-                  opacity: fadeAnim,
-                  transform: [{ translateY: slideAnim }],
-                },
-              ]}
-            >
-              <Text style={styles.title}>Welcome Back</Text>
-              <Text style={styles.subtitle}>Log in to your account</Text>
+                styles.logo,
+                { transform: [{ rotate: spin }] }
+              ]} 
+            />
+            <Text style={styles.title}>Welcome Back</Text>
+            <Text style={styles.subtitle}>Log in to your account</Text>
 
-              <Animated.Image
-                source={require('../images/logo2.png')}
-                style={[
-                  styles.logo,
-                  {
-                    opacity: fadeAnim,
-                    transform: [{ rotate: spin }],
-                  },
-                ]}
+            <View style={styles.inputBox}>
+              <MaterialCommunityIcons name="email-outline" size={24} color="#fff" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                placeholderTextColor="#ccc"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
               />
+            </View>
 
-              <View style={styles.inputBox}>
-                <MaterialCommunityIcons name="email-outline" size={24} color="#fff" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email"
-                  placeholderTextColor="#ccc"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
+            <View style={styles.inputBox}>
+              <MaterialCommunityIcons name="lock-outline" size={24} color="#fff" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                placeholderTextColor="#ccc"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity onPress={toggleShowPassword} style={styles.iconContainer}>
+                <MaterialCommunityIcons
+                  name={showPassword ? 'eye-off' : 'eye'}
+                  size={24}
+                  color="#fff"
                 />
-              </View>
-
-              <View style={styles.inputBox}>
-                <MaterialCommunityIcons name="lock-outline" size={24} color="#fff" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Password"
-                  placeholderTextColor="#ccc"
-                  secureTextEntry={!showPassword}
-                  value={password}
-                  onChangeText={setPassword}
-                />
-                <TouchableOpacity onPress={toggleShowPassword} style={styles.iconContainer}>
-                  <MaterialCommunityIcons
-                    name={showPassword ? 'eye-off' : 'eye'}
-                    size={24}
-                    color="#fff"
-                  />
-                </TouchableOpacity>
-              </View>
-
-              <TouchableOpacity style={styles.forgotPassword} onPress={handlePasswordReset}>
-                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
               </TouchableOpacity>
+            </View>
 
-              <TouchableOpacity
-                style={styles.loginBtn}
-                onPress={handleLogin}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.loginBtnText}>Login</Text>
-                )}
+            <TouchableOpacity style={styles.forgotPassword} onPress={handlePasswordReset}>
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.loginBtn}
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.loginBtnText}>Login</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.googleBtn} onPress={handleGoogleSignIn}>
+              <Text style={styles.googleBtnText}>Sign in with Google</Text>
+            </TouchableOpacity>
+
+            <View style={styles.signupContainer}>
+              <Text style={styles.signupText}>Don't have an account?</Text>
+              <TouchableOpacity onPress={gotoRegister}>
+                <Text style={styles.signupLink}>Sign up</Text>
               </TouchableOpacity>
-
-              <View style={styles.signupContainer}>
-                <Text style={styles.signupText}>Don't have an account?</Text>
-                <TouchableOpacity onPress={gotoRegister}>
-                  <Text style={styles.signupLink}>Sign up</Text>
-                </TouchableOpacity>
-              </View>
-            </Animated.View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </LinearGradient>
-    </ImageBackground>
+            </View>
+          </Animated.View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#fff" />
+        </View>
+      )}
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  backgroundImage: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-  gradient: {
-    flex: 1,
-  },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+    width: '100%',
   },
   scrollViewContent: {
     flexGrow: 1,
@@ -216,17 +249,17 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   innerContainer: {
-    width: '100%',
+    width: '90%',
     maxWidth: 400,
-    alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 20,
-    padding: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    padding: 20,
+    alignItems: 'center',
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
   },
   title: {
     fontSize: 32,
@@ -234,20 +267,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 10,
     textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: -1, height: 1 },
-    textShadowRadius: 10,
   },
   subtitle: {
     fontSize: 18,
     color: '#e0e0e0',
     marginBottom: 30,
     textAlign: 'center',
-  },
-  logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 30,
   },
   inputBox: {
     flexDirection: 'row',
@@ -295,6 +320,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  googleBtn: {
+    width: '100%',
+    backgroundColor: '#fff',
+    paddingVertical: 15,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  googleBtnText: {
+    color: '#4285F4',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
   signupContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -309,6 +352,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 5,
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

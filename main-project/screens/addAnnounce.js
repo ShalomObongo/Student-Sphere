@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, StyleSheet, TextInput } from 'react-native';
 import { Button, Modal, Portal } from 'react-native-paper';
 import { db } from '../firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import debounce from 'lodash.debounce';
 
 const AddAnnouncement = ({ onClose, onAnnouncementAdded }) => {
   const [Title, setTitle] = useState('');
   const [Description, setDescription] = useState('');
+
+  const debouncedSetDescription = useCallback(
+    debounce((text) => setDescription(text), 300),
+    []
+  );
 
   const handleAddAnnouncement = async () => {
     try {
@@ -14,7 +20,7 @@ const AddAnnouncement = ({ onClose, onAnnouncementAdded }) => {
         Title,
         Description,
         Type: 'General',
-        Date: new Date(),
+        timestamp: serverTimestamp(),
       });
       onAnnouncementAdded();
     } catch (error) {
@@ -34,8 +40,8 @@ const AddAnnouncement = ({ onClose, onAnnouncementAdded }) => {
         <TextInput
           style={[styles.input, styles.multilineInput]}
           placeholder="Description"
-          value={Description}
-          onChangeText={setDescription}
+          defaultValue={Description}
+          onChangeText={debouncedSetDescription}
           multiline
         />
         <View style={styles.buttonContainer}>

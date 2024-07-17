@@ -9,6 +9,9 @@ import { auth, db } from '../firebase';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import { doc, setDoc } from 'firebase/firestore';
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
+import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 
 const RegistrationScreen = () => {
   const [email, setEmail] = useState('');
@@ -35,6 +38,21 @@ const RegistrationScreen = () => {
   const validatePhoneNumber = () => {
     return phoneInput.current?.isValidNumber();
   };
+
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    expoClientId: '138270145629-v07v5rma51cjuualt4qlamh4k4sbgdqh.apps.googleusercontent.com',
+    iosClientId: '138270145629-6fmkl6me04nm1dspr8o5ghb23svo73ad.apps.googleusercontent.com',
+    androidClientId: '138270145629-v07v5rma51cjuualt4qlamh4k4sbgdqh.apps.googleusercontent.com',
+    webClientId: '138270145629-v07v5rma51cjuualt4qlamh4k4sbgdqh.apps.googleusercontent.com'
+  });
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { id_token } = response.params;
+      const credential = GoogleAuthProvider.credential(id_token);
+      signInWithCredential(auth, credential);
+    }
+  }, [response]);
 
   const onSelectCountry = (country) => {
     setCountryCode(country.cca2);
@@ -169,6 +187,53 @@ const RegistrationScreen = () => {
     navigation.navigate('Login')
   }
 
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    const result = await promptAsync();
+    if (result.type === 'success') {
+      const { id_token } = result.params;
+      const credential = GoogleAuthProvider.credential(id_token);
+      try {
+        const userCredential = await signInWithCredential(auth, credential);
+        const user = userCredential.user;
+        
+        // Save user data to Firestore
+        await setDoc(doc(db, 'users', user.uid), {
+          email: user.email,
+          firstName: user.displayName,
+          role: 'student', // Default role, you may want to ask the user to select a role
+          phoneNumber: user.phoneNumber || '',
+          active: true,
+        });
+
+        // Add user to Student_List collection (assuming default role is student)
+        await setDoc(doc(db, 'Student_List', user.uid), {
+          F_name: user.displayName,
+          L_name: '',
+          Class_ID: 'N/A',
+        });
+
+        // Add user role
+        await setDoc(doc(db, 'User roles', user.uid), {
+          firstName: user.displayName,
+          role: 'student',
+        });
+
+        setIsLoading(false);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Dashboard' }],
+        });
+      } catch (error) {
+        setIsLoading(false);
+        console.error('Error during Google Sign-In:', error);
+        Alert.alert('Error', 'Failed to sign in with Google. Please try again.');
+      }
+    } else {
+      setIsLoading(false);
+    }
+  };
+
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const spinValue = useRef(new Animated.Value(0)).current;
@@ -213,6 +278,7 @@ const RegistrationScreen = () => {
         <ScrollView 
           contentContainerStyle={styles.scrollViewContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           <Animated.View style={[
             styles.innerContainer,
@@ -310,19 +376,22 @@ const RegistrationScreen = () => {
 
             <View style={styles.inputBox}>
               <MaterialCommunityIcons name="account-group" size={24} color="#fff" style={styles.inputIcon} />
-              <DropDownPicker
-                open={open}
-                value={role}
-                items={items}
-                setOpen={setOpen}
-                setValue={setRole}
-                setItems={setItems}
-                style={styles.picker}
-                dropDownContainerStyle={styles.dropdownContainerStyle}
-                placeholder="Select Role"
-                placeholderStyle={styles.placeholderStyle}
-                labelStyle={styles.labelStyle}
-              />
+              {!open && (
+                <DropDownPicker
+                  open={open}
+                  value={role}
+                  items={items}
+                  setOpen={setOpen}
+                  setValue={setRole}
+                  setItems={setItems}
+                  style={styles.picker}
+                  dropDownContainerStyle={styles.dropdownContainerStyle}
+                  placeholder="Select Role"
+                  placeholderStyle={styles.placeholderStyle}
+                  labelStyle={styles.labelStyle}
+                  listMode="SCROLLVIEW"
+                />
+              )}
             </View>
 
             <TouchableOpacity 
@@ -337,12 +406,42 @@ const RegistrationScreen = () => {
               )}
             </TouchableOpacity>
 
+            <TouchableOpacity 
+              style={styles.googleBtn} 
+              onPress={handleGoogleSignIn}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#4285F4" />
+              ) : (
+                <Text style={styles.googleBtnText}>Sign up with Google</Text>
+              )}
+            </TouchableOpacity>
+
             <Text style={styles.loginText}>
               Already have an account? <Text style={styles.loginLink} onPress={gotoLogin}>Login</Text>
             </Text>
           </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
+      {open && (
+        <View style={styles.dropdownOverlay}>
+          <DropDownPicker
+            open={open}
+            value={role}
+            items={items}
+            setOpen={setOpen}
+            setValue={setRole}
+            setItems={setItems}
+            style={styles.picker}
+            dropDownContainerStyle={styles.dropdownContainerStyle}
+            placeholder="Select Role"
+            placeholderStyle={styles.placeholderStyle}
+            labelStyle={styles.labelStyle}
+            listMode="SCROLLVIEW"
+          />
+        </View>
+      )}
       {isLoading && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#fff" />
@@ -355,8 +454,6 @@ const RegistrationScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -367,6 +464,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 20,
+    paddingTop: Platform.OS === 'ios' ? 50 : 30,
   },
   innerContainer: {
     width: '90%',
@@ -375,6 +473,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',
+    marginTop: 60,
   },
   logo: {
     width: 100,
@@ -452,6 +551,25 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  googleBtn: {
+    width: '100%',
+    backgroundColor: '#fff',
+    paddingVertical: 15,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  googleBtnText: {
+    color: '#4285F4',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
   loginText: {
     fontSize: 16,
     color: '#e0e0e0',
@@ -468,10 +586,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  dropdownOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
 });
 
 export default RegistrationScreen;
-
-
-
-
