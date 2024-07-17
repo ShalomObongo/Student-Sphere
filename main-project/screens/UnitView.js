@@ -233,7 +233,7 @@ const UnitView = () => {
             ))}
           </ScrollView>
         )}
-        {isTeacher && (
+        { (
           <TouchableOpacity onPress={gotoForm} style={styles.addContainer}>
             <Icon name="plus" type="material-community" size={30} color="#fff" />
           </TouchableOpacity>

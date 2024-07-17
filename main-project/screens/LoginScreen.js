@@ -132,6 +132,10 @@ const LoginScreen = () => {
     navigation.navigate('Registration');
   };
 
+  const gotoOTPScreen = () => {
+    navigation.navigate('Login with OTP');
+  };
+
   return (
     <LinearGradient
       colors={['#4c669f', '#3b5998', '#192f6a']}
