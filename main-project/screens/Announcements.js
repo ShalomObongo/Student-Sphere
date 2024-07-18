@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Platform, View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Alert, KeyboardAvoidingView, ScrollView } from "react-native";
+import { Platform, View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Alert, KeyboardAvoidingView, ScrollView, SafeAreaView, RefreshControl } from "react-native";
 import { Card, Title, Paragraph, Button, Modal } from 'react-native-paper';
 import { db, auth } from "../firebase";
-import { collection, getDocs, query, where, doc, getDoc, addDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, getDoc, addDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from 'expo-linear-gradient';
 import AddAnnouncement from './addAnnounce';
 import { Icon } from 'react-native-elements';
+import * as Animatable from 'react-native-animatable';
 
 const Announcements = () => {
   const [generalAnnouncements, setGeneralAnnouncements] = useState([]);
@@ -16,7 +17,9 @@ const Announcements = () => {
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
   const [isTeacher, setIsTeacher] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isAddAnnouncementVisible, setIsAddAnnouncementVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const checkUserRole = useCallback(async () => {
     const user = auth.currentUser;
@@ -24,6 +27,7 @@ const Announcements = () => {
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (userDoc.exists()) {
         setIsTeacher(userDoc.data().role === 'teacher');
+        setIsAdmin(userDoc.data().role === 'admin');
       }
     }
   }, []);
@@ -38,7 +42,7 @@ const Announcements = () => {
       // Fetch general announcements
       const generalQuery = query(collection(db, "Announcements"), where("Type", "==", "General"));
       const generalSnapshot = await getDocs(generalQuery);
-      const generalData = generalSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const generalData = generalSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), timestamp: doc.data().timestamp ? doc.data().timestamp.toDate() : new Date() }));
       setGeneralAnnouncements(generalData);
 
       const userId = auth.currentUser.uid;
@@ -68,114 +72,128 @@ const Announcements = () => {
       console.error("Error fetching announcements: ", error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [isTeacher]);
 
   useFocusEffect(
     useCallback(() => {
+      if (loading) {
+        fetchAnnouncements();
+      }
+    }, [fetchAnnouncements, loading])
+  );
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchAnnouncements();
+  }, [fetchAnnouncements]);
+
+  const renderAnnouncementItem = ({ item }) => (
+    <Animatable.View animation="fadeInUp" duration={800} style={styles.card}>
+      <Card>
+        <Card.Content>
+          <Title style={styles.cardTitle}>{item.Title}</Title>
+          <Paragraph style={styles.cardDescription}>{item.Description}</Paragraph>
+          <Text style={styles.cardTimestamp}>
+            {item.timestamp.toLocaleString()}
+          </Text>
+          {isAdmin && (
+            <TouchableOpacity onPress={() => handleDeleteAnnouncement(item.id)} style={styles.deleteButton}>
+              <Icon name="delete" type="material" color="#FF0000" size={24} />
+            </TouchableOpacity>
+          )}
+        </Card.Content>
+      </Card>
+    </Animatable.View>
+  );
+
+  const handleDeleteAnnouncement = async (announcementId) => {
+    try {
+      await deleteDoc(doc(db, "Announcements", announcementId));
+      Alert.alert("Success", "Announcement deleted successfully!");
       fetchAnnouncements();
-    }, [fetchAnnouncements])
-  );
+    } catch (error) {
+      console.error("Error deleting announcement: ", error);
+      Alert.alert("Error", "Failed to delete announcement. Please try again.");
+    }
+  };
 
-  const renderGhostAnnouncement = () => (
-    <Card style={[styles.card, styles.ghostCard]}>
-      <Card.Content>
-        <View style={styles.ghostTitle} />
-        <View style={styles.ghostDescription} />
-      </Card.Content>
-    </Card>
-  );
-
-  const renderGhostUnit = () => (
-    <View style={[styles.unitStack, styles.ghostUnitStack]}>
-      <View style={styles.ghostUnitName} />
-    </View>
-  );
-
-  if (loading) {
-    return (
-      <LinearGradient
-        colors={['#4c669f', '#3b5998', '#192f6a']}
-        style={styles.container}
+  const renderUnitItem = ({ item }) => (
+    <Animatable.View animation="fadeInUp" duration={800}>
+      <TouchableOpacity
+        style={styles.unitStack}
+        onPress={() => navigation.navigate('View Announcement', { unitId: item.id, isTeacher })}
       >
-        <Text style={styles.sectionTitle}>General Announcements</Text>
-        <FlatList
-          data={[1, 2, 3]}
-          renderItem={renderGhostAnnouncement}
-          keyExtractor={(item) => item.toString()}
-        />
-
-        <Text style={styles.sectionTitle}>
-          {isTeacher ? "All Unit Announcements" : "Enrolled Unit Announcements"}
-        </Text>
-        <FlatList
-          data={[1, 2, 3, 4, 5]}
-          renderItem={renderGhostUnit}
-          keyExtractor={(item) => item.toString()}
-        />
-      </LinearGradient>
-    );
-  }
+        <LinearGradient
+          colors={['#4b7bec', '#3867d6']}
+          style={styles.unitGradient}
+        >
+          <Text style={styles.unitName}>{item.name}</Text>
+          <Icon name="chevron-right" type="material-community" color="#fff" size={24} />
+        </LinearGradient>
+      </TouchableOpacity>
+    </Animatable.View>
+  );
 
   return (
     <LinearGradient
       colors={['#4c669f', '#3b5998', '#192f6a']}
       style={styles.container}
     >
-      <Text style={styles.sectionTitle}>General Announcements</Text>
-      {isTeacher && (
-        <Button 
-          mode="contained" 
-          onPress={() => setIsAddAnnouncementVisible(true)} 
-          style={styles.addButton}
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
         >
-          Add Announcement
-        </Button>
-      )}
-      <FlatList
-        data={generalAnnouncements}
-        renderItem={({ item }) => (
-          <Card style={styles.card}>
-            <Card.Content>
-              <Title>{item.Title}</Title>
-              <Paragraph>{item.Description}</Paragraph>
-            </Card.Content>
-          </Card>
-        )}
-        keyExtractor={(item) => item.id}
-        ListEmptyComponent={<Text style={styles.emptyText}>No general announcements</Text>}
-      />
+          <View style={styles.content}>
+            <Text style={styles.sectionTitle}>General Announcements</Text>
+            {isTeacher && (
+              <Button 
+                mode="contained" 
+                onPress={() => setIsAddAnnouncementVisible(true)} 
+                style={styles.addButton}
+                icon="plus"
+              >
+                Add Announcement
+              </Button>
+            )}
+            <FlatList
+              data={generalAnnouncements}
+              renderItem={renderAnnouncementItem}
+              keyExtractor={(item) => item.id}
+              ListEmptyComponent={<Text style={styles.emptyText}>No general announcements</Text>}
+              scrollEnabled={false}
+            />
 
-      <Text style={styles.sectionTitle}>
-        {isTeacher ? "All Unit Announcements" : "Enrolled Unit Announcements"}
-      </Text>
-      <FlatList
-        data={isTeacher ? allUnits : enrolledUnits}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.unitStack}
-            onPress={() => navigation.navigate('View Announcement', { unitId: item.id, isTeacher })}
-          >
-            <Text style={styles.unitName}>{item.name}</Text>
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item) => item.id}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>
-            {isTeacher ? "No units available" : "No enrolled units"}
-          </Text>
-        }
-      />
+            <Text style={styles.sectionTitle}>
+              {isTeacher ? "All Unit Announcements" : "Enrolled Unit Announcements"}
+            </Text>
+            <FlatList
+              data={isTeacher ? allUnits : enrolledUnits}
+              renderItem={renderUnitItem}
+              keyExtractor={(item) => item.id}
+              ListEmptyComponent={
+                <Text style={styles.emptyText}>
+                  {isTeacher ? "No units available" : "No enrolled units"}
+                </Text>
+              }
+              scrollEnabled={false}
+            />
+          </View>
+        </ScrollView>
 
-      {isAddAnnouncementVisible && (
-        <AddAnnouncement
-          onClose={() => setIsAddAnnouncementVisible(false)}
-          onAnnouncementAdded={() => {
-            setIsAddAnnouncementVisible(false);
-            fetchAnnouncements();
-          }}
-        />
-      )}
+        {isAddAnnouncementVisible && (
+          <AddAnnouncement
+            onClose={() => setIsAddAnnouncementVisible(false)}
+            onAnnouncementAdded={() => {
+              setIsAddAnnouncementVisible(false);
+              fetchAnnouncements();
+            }}
+          />
+        )}
+      </SafeAreaView>
     </LinearGradient>
   );
 };
@@ -183,17 +201,48 @@ const Announcements = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  content: {
+    padding: 16,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#fff',
     marginTop: 20,
     marginBottom: 10,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: -1, height: 1 },
+    textShadowRadius: 10,
   },
   card: {
-    marginBottom: 20,
+    marginBottom: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 5,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  cardDescription: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 8,
+  },
+  cardTimestamp: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 8,
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
   },
   emptyText: {
     textAlign: 'center',
@@ -202,44 +251,25 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   unitStack: {
-    backgroundColor: '#4b7bec',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
+    marginBottom: 12,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 5,
+  },
+  unitGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
   },
   unitName: {
-    color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#fff',
   },
   addButton: {
-    marginBottom: 10,
-  },
-  ghostCard: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    marginBottom: 20,
-  },
-  ghostTitle: {
-    width: '70%',
-    height: 20,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    borderRadius: 4,
-    marginBottom: 10,
-  },
-  ghostDescription: {
-    width: '100%',
-    height: 40,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 4,
-  },
-  ghostUnitStack: {
-    backgroundColor: 'rgba(75,123,236,0.3)',
-  },
-  ghostUnitName: {
-    width: '70%',
-    height: 20,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    borderRadius: 4,
+    marginBottom: 16,
+    borderRadius: 8,
   },
 });
 

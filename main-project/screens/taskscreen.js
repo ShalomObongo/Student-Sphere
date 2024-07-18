@@ -307,7 +307,10 @@ const TaskScreen = () => {
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
                     style={styles.modalOverlay}
                 >
-                    <ScrollView contentContainerStyle={styles.modalScrollView}>
+                    <ScrollView 
+                        contentContainerStyle={styles.modalScrollView}
+                        keyboardShouldPersistTaps="handled"
+                    >
                         <View style={styles.modalContainer}>
                             <Text style={styles.modalTitle}>Add New Task</Text>
                             <TextInput
@@ -347,23 +350,26 @@ const TaskScreen = () => {
                                     style={styles.datePicker}
                                 />
                             )}
-                            <DropDownPicker
-                                open={open}
-                                value={priority}
-                                items={[
-                                    { label: '1 - Low', value: '1' },
-                                    { label: '2', value: '2' },
-                                    { label: '3', value: '3' },
-                                    { label: '4', value: '4' },
-                                    { label: '5 - High', value: '5' },
-                                ]}
-                                setOpen={setOpen}
-                                setValue={setPriority}
-                                style={styles.dropdownStyle}
-                                dropDownContainerStyle={styles.dropdownContainerStyle}
-                                placeholder="Select Priority"
-                                placeholderStyle={styles.dropdownPlaceholder}
-                            />
+                            {!open && (
+                                <DropDownPicker
+                                    open={open}
+                                    value={priority}
+                                    items={[
+                                        { label: '1 - Low', value: '1' },
+                                        { label: '2', value: '2' },
+                                        { label: '3', value: '3' },
+                                        { label: '4', value: '4' },
+                                        { label: '5 - High', value: '5' },
+                                    ]}
+                                    setOpen={setOpen}
+                                    setValue={setPriority}
+                                    style={styles.dropdownStyle}
+                                    dropDownContainerStyle={styles.dropdownContainerStyle}
+                                    placeholder="Select Priority"
+                                    placeholderStyle={styles.dropdownPlaceholder}
+                                    listMode="SCROLLVIEW"
+                                />
+                            )}
                             <View style={styles.modalButtonContainer}>
                                 <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setModalVisible(false)}>
                                     <Text style={styles.modalButtonText}>Cancel</Text>
@@ -375,6 +381,28 @@ const TaskScreen = () => {
                         </View>
                     </ScrollView>
                 </KeyboardAvoidingView>
+                {open && (
+                    <View style={styles.dropdownOverlay}>
+                        <DropDownPicker
+                            open={open}
+                            value={priority}
+                            items={[
+                                { label: '1 - Low', value: '1' },
+                                { label: '2', value: '2' },
+                                { label: '3', value: '3' },
+                                { label: '4', value: '4' },
+                                { label: '5 - High', value: '5' },
+                            ]}
+                            setOpen={setOpen}
+                            setValue={setPriority}
+                            style={styles.dropdownStyle}
+                            dropDownContainerStyle={styles.dropdownContainerStyle}
+                            placeholder="Select Priority"
+                            placeholderStyle={styles.dropdownPlaceholder}
+                            listMode="SCROLLVIEW"
+                        />
+                    </View>
+                )}
             </Modal>
 
             <Modal visible={editModalVisible} animationType="slide" transparent={true}>
@@ -382,7 +410,10 @@ const TaskScreen = () => {
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
                     style={styles.modalOverlay}
                 >
-                    <ScrollView contentContainerStyle={styles.modalScrollView}>
+                    <ScrollView 
+                        contentContainerStyle={styles.modalScrollView}
+                        keyboardShouldPersistTaps="handled"
+                    >
                         <View style={styles.modalContainer}>
                             <Text style={styles.modalTitle}>Edit Task</Text>
                             <TextInput
@@ -422,26 +453,29 @@ const TaskScreen = () => {
                                     style={styles.datePicker}
                                 />
                             )}
-                            <DropDownPicker
-                                open={open}
-                                value={editTask.priority}
-                                items={[
-                                    { label: '1 - Low', value: '1' },
-                                    { label: '2', value: '2' },
-                                    { label: '3', value: '3' },
-                                    { label: '4', value: '4' },
-                                    { label: '5 - High', value: '5' },
-                                ]}
-                                setOpen={setOpen}
-                                setValue={(callback) => {
-                                    const value = callback(editTask.priority);
-                                    setEditTask({ ...editTask, priority: value });
-                                }}
-                                style={styles.dropdownStyle}
-                                dropDownContainerStyle={styles.dropdownContainerStyle}
-                                placeholder="Select Priority"
-                                placeholderStyle={styles.dropdownPlaceholder}
-                            />
+                            {!open && (
+                                <DropDownPicker
+                                    open={open}
+                                    value={editTask.priority}
+                                    items={[
+                                        { label: '1 - Low', value: '1' },
+                                        { label: '2', value: '2' },
+                                        { label: '3', value: '3' },
+                                        { label: '4', value: '4' },
+                                        { label: '5 - High', value: '5' },
+                                    ]}
+                                    setOpen={setOpen}
+                                    setValue={(callback) => {
+                                        const value = callback(editTask.priority);
+                                        setEditTask({ ...editTask, priority: value });
+                                    }}
+                                    style={styles.dropdownStyle}
+                                    dropDownContainerStyle={styles.dropdownContainerStyle}
+                                    placeholder="Select Priority"
+                                    placeholderStyle={styles.dropdownPlaceholder}
+                                    listMode="SCROLLVIEW"
+                                />
+                            )}
                             <View style={styles.modalButtonContainer}>
                                 <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setEditModalVisible(false)}>
                                     <Text style={styles.modalButtonText}>Cancel</Text>
@@ -453,6 +487,31 @@ const TaskScreen = () => {
                         </View>
                     </ScrollView>
                 </KeyboardAvoidingView>
+                {open && (
+                    <View style={styles.dropdownOverlay}>
+                        <DropDownPicker
+                            open={open}
+                            value={editTask.priority}
+                            items={[
+                                { label: '1 - Low', value: '1' },
+                                { label: '2', value: '2' },
+                                { label: '3', value: '3' },
+                                { label: '4', value: '4' },
+                                { label: '5 - High', value: '5' },
+                            ]}
+                            setOpen={setOpen}
+                            setValue={(callback) => {
+                                const value = callback(editTask.priority);
+                                setEditTask({ ...editTask, priority: value });
+                            }}
+                            style={styles.dropdownStyle}
+                            dropDownContainerStyle={styles.dropdownContainerStyle}
+                            placeholder="Select Priority"
+                            placeholderStyle={styles.dropdownPlaceholder}
+                            listMode="SCROLLVIEW"
+                        />
+                    </View>
+                )}
             </Modal>
         </LinearGradient>
     );
@@ -683,6 +742,16 @@ const styles = StyleSheet.create({
     },
     ghostButton: {
         backgroundColor: 'rgba(255,255,255,0.2)',
+    },
+    dropdownOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
 });
 

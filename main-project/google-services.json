@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "138270145629",
+    "project_id": "studentsphere-1fb98",
+    "storage_bucket": "studentsphere-1fb98.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:138270145629:android:23fc1b4bb3f40d0cd8a1b4",
+        "android_client_info": {
+          "package_name": "com.studentsphere.studentsphere"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "138270145629-v07v5rma51cjuualt4qlamh4k4sbgdqh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8GObUyENUGv8ISda21r8UUstOMxj0RSM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "138270145629-v07v5rma51cjuualt4qlamh4k4sbgdqh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "138270145629-6fmkl6me04nm1dspr8o5ghb23svo73ad.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.studentsphere.studentsphere"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

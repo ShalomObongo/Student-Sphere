@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Modal, View, StyleSheet, ActivityIndicator, ScrollView, TextInput, TouchableOpacity } from "react-native";
-import { DataTable, Text, Headline, Divider, Button } from "react-native-paper";
+import { Platform, View, StyleSheet, FlatList, SafeAreaView, TouchableOpacity, Modal } from "react-native";
+import { Card, Text, Headline, Divider, TextInput, Button, FAB, ActivityIndicator } from "react-native-paper";
 import { getFirestore, collection, getDocs, updateDoc, doc, addDoc } from "firebase/firestore";
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Animatable from 'react-native-animatable';
@@ -92,6 +92,61 @@ const TeacherTable = () => {
     }
   };
 
+  const renderTeacherItem = ({ item, index }) => (
+    <Animatable.View animation="fadeIn" delay={index * 100}>
+      <Card style={styles.card}>
+        <Card.Content>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>{`${item.F_name} ${item.L_name}`}</Text>
+            <Text style={styles.email}>{item.Email}</Text>
+          </View>
+          {editingIndex === index ? (
+            <View style={styles.editForm}>
+              <TextInput
+                label="Email"
+                value={item.Email}
+                onChangeText={(text) => handleInputChange(text, "Email", index)}
+                style={styles.input}
+              />
+              <TextInput
+                label="First Name"
+                value={item.F_name}
+                onChangeText={(text) => handleInputChange(text, "F_name", index)}
+                style={styles.input}
+              />
+              <TextInput
+                label="Last Name"
+                value={item.L_name}
+                onChangeText={(text) => handleInputChange(text, "L_name", index)}
+                style={styles.input}
+              />
+              <TextInput
+                label="Office"
+                value={item.Office}
+                onChangeText={(text) => handleInputChange(text, "Office", index)}
+                style={styles.input}
+              />
+              <TextInput
+                label="Subject ID"
+                value={item.sbj_id}
+                onChangeText={(text) => handleInputChange(text, "sbj_id", index)}
+                style={styles.input}
+              />
+              <View style={styles.actionButtons}>
+                <Button mode="contained" onPress={() => handleSave(index)} style={styles.saveButton}>Save</Button>
+                <Button mode="outlined" onPress={handleCancel} style={styles.cancelButton}>Cancel</Button>
+              </View>
+            </View>
+          ) : (
+            <TouchableOpacity onPress={() => handleEdit(index)} style={styles.cardTouchable}>
+              <Icon name="edit" type="material" color="#4b7bec" size={24} />
+            </TouchableOpacity>
+          )}
+        </Card.Content>
+      </Card>
+    </Animatable.View>
+  );
+
   if (loading) {
     return (
       <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.loadingContainer}>
@@ -102,10 +157,12 @@ const TeacherTable = () => {
 
   return (
     <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.container}>
-      <Animatable.View animation="fadeIn" style={styles.content}>
-        <Headline style={styles.title}>Teacher List</Headline>
+      <SafeAreaView style={styles.safeArea}>
+        <Animatable.View animation="fadeIn" duration={1000} style={styles.header}>
+          <Icon name="school" type="material" color="#fff" size={40} />
+          <Headline style={styles.title}>Teacher List</Headline>
+        </Animatable.View>
         <Divider style={styles.divider} />
-        
         <TextInput
           style={styles.searchInput}
           placeholder="Search teachers..."
@@ -113,98 +170,17 @@ const TeacherTable = () => {
           value={searchQuery}
           onChangeText={handleSearch}
         />
-
-        <ScrollView horizontal={true}>
-          <View style={styles.tableContainer}>
-            <DataTable style={styles.table}>
-              <DataTable.Header style={styles.tableHeader}>
-                <DataTable.Title style={styles.headerCell}>Email</DataTable.Title>
-                <DataTable.Title style={styles.headerCell}>First Name</DataTable.Title>
-                <DataTable.Title style={styles.headerCell}>Last Name</DataTable.Title>
-                <DataTable.Title style={styles.headerCell}>Office</DataTable.Title>
-                <DataTable.Title style={styles.headerCell}>Subject ID</DataTable.Title>
-                <DataTable.Title style={styles.headerCell}>Actions</DataTable.Title>
-              </DataTable.Header>
-
-              {filteredTeachers.map((teacher, index) => (
-                <Animatable.View key={teacher.id} animation="fadeInUp" delay={index * 100}>
-                  <DataTable.Row style={styles.tableRow}>
-                    <DataTable.Cell style={styles.dataCell}>
-                      {editingIndex === index ? (
-                        <TextInput
-                          value={teacher.Email}
-                          onChangeText={(text) => handleInputChange(text, "Email", index)}
-                          style={styles.input}
-                        />
-                      ) : (
-                        teacher.Email
-                      )}
-                    </DataTable.Cell>
-                    <DataTable.Cell style={styles.dataCell}>
-                      {editingIndex === index ? (
-                        <TextInput
-                          value={teacher.F_name}
-                          onChangeText={(text) => handleInputChange(text, "F_name", index)}
-                          style={styles.input}
-                        />
-                      ) : (
-                        teacher.F_name
-                      )}
-                    </DataTable.Cell>
-                    <DataTable.Cell style={styles.dataCell}>
-                      {editingIndex === index ? (
-                        <TextInput
-                          value={teacher.L_name}
-                          onChangeText={(text) => handleInputChange(text, "L_name", index)}
-                          style={styles.input}
-                        />
-                      ) : (
-                        teacher.L_name
-                      )}
-                    </DataTable.Cell>
-                    <DataTable.Cell style={styles.dataCell}>
-                      {editingIndex === index ? (
-                        <TextInput
-                          value={teacher.Office}
-                          onChangeText={(text) => handleInputChange(text, "Office", index)}
-                          style={styles.input}
-                        />
-                      ) : (
-                        teacher.Office
-                      )}
-                    </DataTable.Cell>
-                    <DataTable.Cell style={styles.dataCell}>
-                      {editingIndex === index ? (
-                        <TextInput
-                          value={teacher.sbj_id}
-                          onChangeText={(text) => handleInputChange(text, "sbj_id", index)}
-                          style={styles.input}
-                        />
-                      ) : (
-                        teacher.sbj_id
-                      )}
-                    </DataTable.Cell>
-                    <DataTable.Cell style={styles.actionCell}>
-                      {editingIndex === index ? (
-                        <View style={styles.actionButtons}>
-                          <Button mode="contained" title="Save" onPress={() => handleSave(index)} style={styles.saveButton}>Save</Button>
-                          <Button mode="outlined" onPress={handleCancel} style={styles.cancelButton}>Cancel</Button>
-                        </View>
-                      ) : (
-                        <Button mode="contained" title="Save" onPress={() => handleEdit(index)} style={styles.editButton}>Edit</Button>
-                      )}
-                    </DataTable.Cell>
-                  </DataTable.Row>
-                </Animatable.View>
-              ))}
-            </DataTable>
-          </View>
-        </ScrollView>
-
-        <TouchableOpacity style={styles.fab} onPress={() => setShowAddModal(true)}>
-          <Icon name="add" type="material" color="#ffffff" size={24} />
-        </TouchableOpacity>
-
+        <FlatList
+          data={filteredTeachers}
+          renderItem={renderTeacherItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContainer}
+        />
+        <FAB
+          style={styles.fab}
+          icon="plus"
+          onPress={() => setShowAddModal(true)}
+        />
         <Modal visible={showAddModal} animationType="slide" transparent={true}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
@@ -246,7 +222,7 @@ const TeacherTable = () => {
             </View>
           </View>
         </Modal>
-      </Animatable.View>
+      </SafeAreaView>
     </LinearGradient>
   );
 };
@@ -255,27 +231,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  loadingContainer: {
+  safeArea: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingTop: Platform.OS === 'android' ? 25 : 0,
   },
-  content: {
-    flex: 1,
-    padding: 20,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#ffffff",
-    marginBottom: 20,
-    textAlign: "center",
+    color: "#fff",
+    marginLeft: 10,
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: -1, height: 1 },
     textShadowRadius: 10,
   },
   divider: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#fff",
     height: 2,
     marginBottom: 20,
   },
@@ -286,66 +262,64 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: '#ffffff',
   },
-  tableContainer: {
-    minWidth: 800,
+  listContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 80, // Add some bottom padding for FAB
   },
-  table: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 10,
-    overflow: "hidden",
+  card: {
+    marginBottom: 16,
+    elevation: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
-  tableHeader: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
   },
-  headerCell: {
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 16,
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
-  tableRow: {
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  email: {
+    fontSize: 14,
+    color: '#4b7bec',
   },
-  dataCell: {
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 16,
+  cardTouchable: {
+    alignItems: 'flex-end',
+  },
+  editForm: {
+    marginTop: 8,
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 5,
-    padding: 8,
-    color: '#ffffff',
-  },
-  actionCell: {
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 16,
+    marginBottom: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
   },
   actionButtons: {
     flexDirection: "row",
-  },
-  editButton: {
-    backgroundColor: '#4c669f',
+    justifyContent: "space-between",
+    marginTop: 8,
   },
   saveButton: {
-    backgroundColor: '#28a745',
-    marginRight: 10,
+    flex: 1,
+    marginRight: 8,
+    backgroundColor: '#26de81',
   },
   cancelButton: {
-    borderColor: '#ffffff',
+    flex: 1,
+    borderColor: '#4b7bec',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   fab: {
     position: 'absolute',
-    right: 20,
-    bottom: 20,
-    backgroundColor: '#4c669f',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
+    margin: 16,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#4b7bec',
   },
   modalOverlay: {
     flex: 1,
