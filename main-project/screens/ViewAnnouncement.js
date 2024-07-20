@@ -86,7 +86,7 @@ const ViewAnnouncement = ({ route }) => {
   return (
     <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text style={styles.headerText}>Announcements for {unitName}</Text>
+        <Text style={styles.headerText}>Announcements for {unitName || 'this unit'}</Text>
       </View>
       <FlatList
         data={unitAnnouncements}
@@ -204,8 +204,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   modalContainer: {
-    flex: 1,
-    justifyContent: 'flex-end',
+    backgroundColor: 'white',
+    padding: 10,
+    margin: 10,
+    borderRadius: 10,
+    marginTop: 100,
   },
   modalContent: {
     backgroundColor: 'white',

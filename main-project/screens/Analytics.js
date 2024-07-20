@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { View, Text, StyleSheet, Dimensions, ActivityIndicator, ScrollView, TouchableOpacity } from "react-native";
 import { Card, Title, Paragraph } from 'react-native-paper';
 import { PieChart, LineChart, BarChart } from "react-native-chart-kit";
@@ -128,6 +128,58 @@ const Analytics = () => {
     setActiveUsers(dailyActiveCounts);
   };
 
+  const userDistributionData = useMemo(() => ({
+    data: userDistribution,
+    width: screenWidth - 60,
+    height: 220,
+    chartConfig,
+    accessor: "population",
+    backgroundColor: "transparent",
+    paddingLeft: "15",
+    center: [10, 0],
+    absolute: true
+  }), [userDistribution]);
+
+  const taskCompletionData = useMemo(() => ({
+    data: taskCompletion,
+    width: screenWidth - 60,
+    height: 220,
+    chartConfig,
+    accessor: "count",
+    backgroundColor: "transparent",
+    paddingLeft: "15",
+    center: [10, 0],
+    absolute: true
+  }), [taskCompletion]);
+
+  const unitEnrollmentsData = useMemo(() => ({
+    data: {
+      labels: unitEnrollments.map(unit => unit.unitName),
+      datasets: [{
+        data: unitEnrollments.map(unit => unit.enrollments)
+      }]
+    },
+    width: screenWidth - 60,
+    height: 220,
+    yAxisLabel: "",
+    chartConfig,
+    verticalLabelRotation: 30
+  }), [unitEnrollments]);
+
+  const activeUsersData = useMemo(() => ({
+    data: {
+      labels: ["6 days ago", "5 days ago", "4 days ago", "3 days ago", "2 days ago", "Yesterday", "Today"],
+      datasets: [{
+        data: activeUsers
+      }]
+    },
+    width: screenWidth - 60,
+    height: 220,
+    yAxisLabel: "",
+    chartConfig,
+    bezier: true
+  }), [activeUsers]);
+
   if (loading) {
     return (
       <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} style={styles.loadingContainer}>
@@ -147,53 +199,21 @@ const Analytics = () => {
         <Animatable.View animation="fadeInUp" delay={200} style={styles.card}>
           <Card.Content>
             <Title style={styles.cardTitle}>User Distribution</Title>
-            <PieChart
-              data={userDistribution}
-              width={screenWidth - 60}
-              height={220}
-              chartConfig={chartConfig}
-              accessor={"population"}
-              backgroundColor={"transparent"}
-              paddingLeft={"15"}
-              center={[10, 0]}
-              absolute
-            />
+            <PieChart {...userDistributionData} />
           </Card.Content>
         </Animatable.View>
 
         <Animatable.View animation="fadeInUp" delay={400} style={styles.card}>
           <Card.Content>
             <Title style={styles.cardTitle}>Task Completion</Title>
-            <PieChart
-              data={taskCompletion}
-              width={screenWidth - 60}
-              height={220}
-              chartConfig={chartConfig}
-              accessor={"count"}
-              backgroundColor={"transparent"}
-              paddingLeft={"15"}
-              center={[10, 0]}
-              absolute
-            />
+            <PieChart {...taskCompletionData} />
           </Card.Content>
         </Animatable.View>
 
         <Animatable.View animation="fadeInUp" delay={600} style={styles.card}>
           <Card.Content>
             <Title style={styles.cardTitle}>Top 5 Unit Enrollments</Title>
-            <BarChart
-              data={{
-                labels: unitEnrollments.map(unit => unit.unitName),
-                datasets: [{
-                  data: unitEnrollments.map(unit => unit.enrollments)
-                }]
-              }}
-              width={screenWidth - 60}
-              height={220}
-              yAxisLabel=""
-              chartConfig={chartConfig}
-              verticalLabelRotation={30}
-            />
+            <BarChart {...unitEnrollmentsData} />
           </Card.Content>
         </Animatable.View>
 
@@ -215,19 +235,7 @@ const Analytics = () => {
         <Animatable.View animation="fadeInUp" delay={1000} style={styles.card}>
           <Card.Content>
             <Title style={styles.cardTitle}>Active Users (Last 7 Days)</Title>
-            <LineChart
-              data={{
-                labels: ["6 days ago", "5 days ago", "4 days ago", "3 days ago", "2 days ago", "Yesterday", "Today"],
-                datasets: [{
-                  data: activeUsers
-                }]
-              }}
-              width={screenWidth - 60}
-              height={220}
-              yAxisLabel=""
-              chartConfig={chartConfig}
-              bezier
-            />
+            <LineChart {...activeUsersData} />
           </Card.Content>
         </Animatable.View>
 
