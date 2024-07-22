@@ -36,10 +36,10 @@ const ViewAnnouncement = ({ route }) => {
   };
 
   const addAnnouncement = async () => {
-    if (!isTeacher) {
-      Alert.alert("Error", "Only teachers can add announcements.");
-      return;
-    }
+    // if (!isTeacher) {
+    //   Alert.alert("Error", "Only teachers can add announcements.");
+    //   return;
+    // }
 
     if (!newAnnouncementTitle || !newAnnouncementDescription) {
       Alert.alert("Error", "Please fill in both title and description.");
@@ -95,7 +95,7 @@ const ViewAnnouncement = ({ route }) => {
         ListEmptyComponent={<Text style={styles.emptyText}>No announcements for this unit</Text>}
         contentContainerStyle={styles.listContainer}
       />
-      {isTeacher && (
+      { (
         <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
           <Icon name="add" type="material" color="#ffffff" size={24} />
           <Text style={styles.addButtonText}>Add Announcement</Text>

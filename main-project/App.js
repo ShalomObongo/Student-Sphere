@@ -32,6 +32,9 @@ import ThreadViewScreen from './screens/ThreadViewScreen';
 import CreateThreadScreen from './screens/CreateThreadScreen';
 import UserProfileScreen from './screens/UserProfileScreen';
 import { Provider as PaperProvider } from 'react-native-paper';
+import AddRecommendation from './screens/addRecommendation';
+import OtpScreen from './screens/OTPScreen';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -253,6 +256,16 @@ export default function App() {
                         options={{
                             title: 'User Profile',
                         }}
+                    />
+                    <Stack.Screen
+                        name="AddRecommendation"
+                        component={AddRecommendation}
+                        options={{ title: 'Give Recommendation' }}
+                    />
+                    <Stack.Screen
+                        name="Login with OTP"
+                        component={OtpScreen}
+                        options={{ title: 'Login with OTP' }}
                     />
                 </Stack.Navigator>
             </NavigationContainer>
