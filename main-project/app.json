@@ -35,6 +35,11 @@
       "expo-secure-store",
       "@react-native-google-signin/google-signin"
     ],
-    "scheme": "com.studentsphere.studentsphere"
+    "scheme": "com.studentsphere.studentsphere",
+    "extra": {
+      "eas": {
+        "projectId": "cb73bdd1-0dd7-4fcf-b13a-119778a88874"
+      }
+    }
   }
 }

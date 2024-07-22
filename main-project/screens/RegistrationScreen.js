@@ -3,7 +3,6 @@ import { KeyboardAvoidingView, ScrollView, View, Text, TextInput, StyleSheet, Al
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DropDownPicker from 'react-native-dropdown-picker';
-import CountryPicker from 'react-native-country-picker-modal';
 import PhoneInput from 'react-native-phone-input';
 import { auth, db } from '../firebase';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
@@ -363,7 +362,7 @@ const RegistrationScreen = () => {
               <MaterialCommunityIcons name="phone" size={24} color="#fff" style={styles.inputIcon} />
               <PhoneInput
                 ref={phoneInput}
-                initialCountry="us"
+                initialCountry="ke"
                 onChangePhoneNumber={setPhoneNumber}
                 textProps={{
                   placeholder: 'Phone Number',
