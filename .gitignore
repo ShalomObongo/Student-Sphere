@@ -1,1 +1,4 @@
-node_modules
+# Firebase configuration files
+google-services.json
+GoogleService-Info.plist
+firebase.js
