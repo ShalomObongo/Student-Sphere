@@ -1,30 +1,45 @@
 {
   "expo": {
-    "name": "main-project",
+    "name": "Student-Sphere",
     "slug": "main-project",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./images/logo2.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./images/full_logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.studentsphere.studentsphere",
+      "config": {
+        "googleSignIn": {
+          "reservedClientId": "com.googleusercontent.apps.138270145629-6fmkl6me04nm1dspr8o5ghb23svo73ad"
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.studentsphere.studentsphere",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-secure-store"
-    ]
+      "expo-secure-store",
+      "@react-native-google-signin/google-signin"
+    ],
+    "scheme": "com.studentsphere.studentsphere",
+    "extra": {
+      "eas": {
+        "projectId": "cb73bdd1-0dd7-4fcf-b13a-119778a88874"
+      }
+    }
   }
 }
